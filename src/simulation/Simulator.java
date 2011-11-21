@@ -9,7 +9,7 @@ import java.util.Vector;
  */
 public class Simulator implements EventScheduler {
 
-	private static final int TIME_SCALE = 100000;
+	private static final int TIME_SCALE = 10000;
 	private SimWorld world;
 	private long startTimeMillis;
 

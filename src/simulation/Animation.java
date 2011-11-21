@@ -1,11 +1,11 @@
 package simulation;
 
+import java.awt.Color;
 import java.awt.Graphics;
 import java.awt.HeadlessException;
 import java.util.HashMap;
 
 import javax.swing.JFrame;
-import javax.swing.JTextPane;
 
 public class Animation extends JFrame {
 
@@ -16,7 +16,7 @@ public class Animation extends JFrame {
 
 	private Simulator sim;
 
-	private int border = 80;
+	private int border = 160;
 
 	private float xmin = 497000;
 	private float xmax = 684000;
@@ -40,12 +40,7 @@ public class Animation extends JFrame {
 	public void paint(Graphics g) {
 		super.paint(g);
 
-		removeAll();
-		
-		JTextPane stat = new JTextPane();
-		stat.setText("Hallo world");
-		stat.setBounds(100, 100, 100, 100);
-		add(stat);
+		getContentPane().removeAll();
 
 		// System.out.print("einheitx " + einheitX + " einheity " + einheitY);
 		System.out.println("height: " + getHeight() + " width:" + getWidth());
@@ -55,41 +50,47 @@ public class Animation extends JFrame {
 		for (String s : aps.keySet()) {
 			Airport a = aps.get(s);
 
-			double flughafenX = getXonMap(a.getX1());
-			double flughafenY = getYonMap(a.getY2());
+			int flughafenX = getXonMap(a.getX1());
+			int flughafenY = getYonMap(a.getY2());
 
-			JTextPane pane = new JTextPane();
-			pane.setBounds((int) flughafenX, (int) flughafenY, 100, 20);
-			pane.setText(s);
-			add(pane);
+			// JTextPane pane = new JTextPane();
+			// pane.setBounds(flughafenX, flughafenY, 100, 20);
+			// pane.setText(s);
+			// add(pane);
 			System.out.println(s + " flughafenX: " + flughafenX
 					+ " flughafenY: " + flughafenY);
+			g.drawString(s, (int) flughafenX, (int) flughafenY);
+			g.fillOval(flughafenX, flughafenY, 5, 5);
 
 		}
-		
+
 		HashMap<String, Aircraft> acs = world.getAircrafts();
-		for (String s : acs.keySet()) {
-			Aircraft ac = acs.get(s);
-			ac.getLastX();
-			ac.getLastY();
+		for (String airCraftName : acs.keySet()) {
+			Aircraft ac = acs.get(airCraftName);
+			int x = getXonMap( ac.getLastX() );
+			int y = getYonMap( ac.getLastY() );
+			System.out.print(airCraftName + " is at x " + x + " y " + y);
+			
+			g.setColor(Color.RED);
+			g.fillOval(x, y, 5, 5);
 		}
 
 	}
 
-	public double getXonMap(double CoordinateX) {
+	public int getXonMap(double CoordinateX) {
 		float width = getWidth() - border; // kartenrand
 
 		float einheitX = width / (xmax - xmin);
 
-		return width - (einheitX * (xmax - CoordinateX)) + border / 2;
+		return (int) (width - (einheitX * (xmax - CoordinateX)) + border / 2);
 
 	}
 
-	public double getYonMap(double CoordinateY) {
+	public int getYonMap(double CoordinateY) {
 		float height = getHeight() - border; // kartenrand
 		float einheitY = height / (ymax - ymin);
 
-		return einheitY * (ymax - CoordinateY) + border / 2;
+		return (int) (einheitY * (ymax - CoordinateY) + border / 2);
 
 	}
 

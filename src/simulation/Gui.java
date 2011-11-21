@@ -1,12 +1,9 @@
 package simulation;
 
-import java.awt.GridBagConstraints;
-import java.awt.GridLayout;
-
 import javax.swing.JFrame;
-import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
+import javax.swing.text.DefaultCaret;
 
 /**
  * @author ps A frame with a JTextArea in a JScrollPane which serves as a log -
@@ -22,7 +19,12 @@ public class Gui extends JFrame {
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		jtaDebug = new JTextArea();
 		jtaDebug.setEditable(false);
+		jtaDebug.setAutoscrolls(true);
 		JScrollPane jsp = new JScrollPane(jtaDebug);
+		
+		// Scrolls as long as you don't klick inside the textarea
+		DefaultCaret caret = (DefaultCaret)jtaDebug.getCaret();
+		caret.setUpdatePolicy(DefaultCaret.ALWAYS_UPDATE);
 
 		add(jsp);
 
