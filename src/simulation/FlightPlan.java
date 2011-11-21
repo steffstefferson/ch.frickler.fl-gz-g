@@ -10,7 +10,7 @@ import java.util.LinkedList;
  * belonging to a aircraft.   
  */
 public class FlightPlan {
-	private LinkedList<Flight> flightPlan = new LinkedList();
+	private LinkedList<Flight> flightPlan = new LinkedList<Flight>();
 
 	public int size(){
 		return flightPlan.size();

@@ -2,7 +2,6 @@ package simulation;
 
 
 import java.util.HashMap;
-import java.util.HashSet;
 
 
 /**
@@ -15,7 +14,7 @@ public class SimWorld {
 	private HashMap<String,Airport> airports = new HashMap<String,Airport>();
 	private HashMap<String,Aircraft> aircrafts = new HashMap<String,Aircraft>();
 	static private SimWorld instance = new SimWorld(); 
-	private SimWorld(){}
+	public SimWorld(){}
 	
 	public void addAirport(Airport ap){
 		if (airports.containsKey(ap.getName())) throw new RuntimeException("Duplicate airport name");
@@ -41,6 +40,14 @@ public class SimWorld {
 	public String toString() {
 		return "SimWorld [airports=" + airports + ", aircrafts=" + aircrafts
 				+ "]";
+	}
+
+	public HashMap<String,Airport> getAirports() {
+		return this.airports;
+	}
+
+	public HashMap<String, Aircraft> getAircrafts() {
+		return this.aircrafts;
 	}
 	
 }

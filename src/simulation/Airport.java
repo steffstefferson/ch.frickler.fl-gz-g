@@ -1,8 +1,6 @@
 package simulation;
 
-import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.LinkedList;
 
 
@@ -26,8 +24,8 @@ public class Airport implements EventHandler {
 	private int waitingForTakeOff;
 	private int waitingForLanding;
 	HashSet<Aircraft> aircrafts = new HashSet<Aircraft>(); 
-	LinkedList<Aircraft> waitingForTakeOffQueue = new LinkedList();
-	LinkedList<Aircraft> waitingForLandingQueue = new LinkedList();
+	LinkedList<Aircraft> waitingForTakeOffQueue = new LinkedList<Aircraft>();
+	LinkedList<Aircraft> waitingForLandingQueue = new LinkedList<Aircraft>();
 	
 	public Airport(String name, double x1, double y1, double x2, double y2){
 		this.name = name;
