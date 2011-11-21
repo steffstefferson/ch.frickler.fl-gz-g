@@ -1,12 +1,14 @@
+package simulation;
 
+import java.util.HashMap;
 
-public class Animation extends JFrame{
+import javax.swing.JFrame;
 
+public class Animation extends JFrame {
 
-// Liste mit allen Flugzeigen die geziechnet werden sollen
-HashTable<Aircraft, Object> querySet = new Hashtable();
+	// Liste mit allen Flugzeigen die geziechnet werden sollen
+	HashMap<Aircraft, Object> querySet = new HashMap<Aircraft, Object>();
 
-constructor 
-	// Zeichnen 
+	// Zeichnen
 
 }

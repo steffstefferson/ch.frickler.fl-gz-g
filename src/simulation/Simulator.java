@@ -71,44 +71,46 @@ public class Simulator implements EventScheduler{
 		gui.println(e.toString()); // log the event
 		e.getEventHandler().processEvent(e,this);
 		//log the state of the object which is the target of this 
-		gui.println(e.getEventHandler().toString());  
-
-TODO
-
-Event e = evList.remove(0)
-now = e.getTimestamp();
-lont rt = System.currentTimeMillis - startClockMillies
-long soll = (long) (now*100/timescale);
-if (rt<soll){
-try
-fred.sleep(soll-rt)
-} 
-catch{InterruptedExcption}
-
-if (e.getType()!= EVENT.query gui.println(e.toString()=;
-e.getEventHandeler.processEvent(e,this);
-if (e.getType!=Event.Query) gui.println(e.getEventHandler().toString();
+		gui.println(e.getEventHandler().toString());   
 		
 	}
-
-@Override 
-public void processEvent(Event e, EventScheduler s){
-// we handle only query events!
-if (e.getType == Event.ADD_TO_QUERY){
-	animation.addToQuery(e.getAircraft());
-} else if (e.getType() == Event.REMOVE_FROM_QUERY){
- animation.removeFromQuery(e.getAircracft());
-}
-else if (e.getType == Event.QUERY){
-animation.repaint();
-
-if (evList.size() > )}{
-	Event eNew = new Event(Event.QUERY, this, now + viewGap, null, null);
-	scheduleEvent(eNew);
-	}
-}
-else throw new RuntimeException("Scheduler can handle only QUERY events");
-}
+	
+//	TODO
+//
+//	Event e = evList.remove(0)
+//	now = e.getTimestamp();
+//	lont rt = System.currentTimeMillis - startClockMillies
+//	long soll = (long) (now*100/timescale);
+//	if (rt<soll){
+//	try
+//	fred.sleep(soll-rt)
+//	} 
+//	catch{InterruptedExcption}
+//
+//	if (e.getType()!= EVENT.query gui.println(e.toString()=;
+//	e.getEventHandeler.processEvent(e,this);
+//	if (e.getType!=Event.Query) gui.println(e.getEventHandler().toString();
+//			
+//		}
+//
+//	@Override 
+//	public void processEvent(Event e, EventScheduler s){
+//	// we handle only query events!
+//	if (e.getType == Event.ADD_TO_QUERY){
+//		animation.addToQuery(e.getAircraft());
+//	} else if (e.getType() == Event.REMOVE_FROM_QUERY){
+//	 animation.removeFromQuery(e.getAircracft());
+//	}
+//	else if (e.getType == Event.QUERY){
+//	animation.repaint();
+//
+//	if (evList.size() > )}{
+//		Event eNew = new Event(Event.QUERY, this, now + viewGap, null, null);
+//		scheduleEvent(eNew);
+//		}
+//	}
+//	else throw new RuntimeException("Scheduler can handle only QUERY events");
+//	}
 
 	/**
 	 *  This is the main simulation loop
