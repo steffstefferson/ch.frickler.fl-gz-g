@@ -9,8 +9,9 @@ import java.util.Vector;
  */
 public class Simulator implements EventScheduler {
 
+	private static final int TIME_SCALE = 100000;
 	private SimWorld world;
-	private long now; // simulation time
+	private long startTimeMillis;
 
 	private Gui gui;
 
@@ -19,11 +20,12 @@ public class Simulator implements EventScheduler {
 	public Simulator(SimWorld world) {
 		this.world = world;
 		evList = new Vector<Event>();
+		startTimeMillis = System.currentTimeMillis();
 	}
 
 	@Override
 	public long getCurrentSimulationTime() {
-		return now;
+		return (System.currentTimeMillis() - startTimeMillis) * 100 / TIME_SCALE;
 	}
 
 	/*
@@ -33,7 +35,8 @@ public class Simulator implements EventScheduler {
 	 */
 	public void scheduleEvent(Event e) {
 		long tim = e.getTimeStamp();
-		if (tim < now)
+		final long currentSimulationTime = getCurrentSimulationTime();
+		if (tim < currentSimulationTime)
 			throw new RuntimeException("Causality error: " + this);
 		int pos = 0;
 		while (pos < evList.size()) {
@@ -50,19 +53,17 @@ public class Simulator implements EventScheduler {
 	 * processes the event
 	 */
 	public void processNextEvent() {
-
-		// System.out.println("processing "+e);
-		try {
-			Thread.sleep(2000);
-		} catch (InterruptedException e1) {
-			// TODO Auto-generated catch block
-			e1.printStackTrace();
-		}
-
+		final Event e = evList.remove(0);
+		final long eventTime = e.getTimeStamp();
+		final long currentSimulationTime = getCurrentSimulationTime();
+		if (currentSimulationTime < eventTime)
+			try {
+				Thread.sleep(eventTime - currentSimulationTime);
+			} catch (InterruptedException e1) {
+				e1.printStackTrace();
+			}
 		gui.repaint();
 
-		Event e = evList.remove(0);
-		now = e.getTimeStamp();
 		gui.println(e.toString()); // log the event
 		EventHandler eh = e.getEventHandler();
 		eh.processEvent(e, this);
