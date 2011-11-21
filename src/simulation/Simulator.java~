@@ -91,25 +91,6 @@ if (e.getType!=Event.Query) gui.println(e.getEventHandler().toString();
 		
 	}
 
-@Override 
-public void processEvent(Event e, EventScheduler s){
-// we handle only query events!
-if (e.getType == Event.ADD_TO_QUERY){
-	animation.addToQuery(e.getAircraft());
-} else if (e.getType() == Event.REMOVE_FROM_QUERY){
- animation.removeFromQuery(e.getAircracft());
-}
-else if (e.getType == Event.QUERY){
-animation.repaint();
-
-if (evList.size() > )}{
-	Event eNew = new Event(Event.QUERY, this, now + viewGap, null, null);
-	scheduleEvent(eNew);
-	}
-}
-else throw new RuntimeException("Scheduler can handle only QUERY events");
-}
-
 	/**
 	 *  This is the main simulation loop
 	 */
