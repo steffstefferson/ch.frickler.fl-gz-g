@@ -4,6 +4,8 @@ import java.awt.Color;
 import java.awt.Graphics;
 import java.awt.HeadlessException;
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Set;
 
 import javax.swing.JFrame;
 
@@ -27,10 +29,13 @@ public class Animation extends JFrame {
 	// Liste mit allen Flugzeigen die geziechnet werden sollen
 	HashMap<Aircraft, Object> querySet = new HashMap<Aircraft, Object>();
 
+	private Set<Aircraft> aircraftList;
+
 	public Animation(Simulator sim) throws HeadlessException {
 		super();
 
 		this.sim = sim;
+		this.aircraftList = new HashSet<Aircraft>();
 
 		setBounds(0, 0, 600, 600);
 		setLayout(null);
@@ -67,16 +72,25 @@ public class Animation extends JFrame {
 		HashMap<String, Aircraft> acs = world.getAircrafts();
 		for (String airCraftName : acs.keySet()) {
 			Aircraft ac = acs.get(airCraftName);
-			int x = getXonMap( ac.getLastX() );
-			int y = getYonMap( ac.getLastY() );
+
+			ac.calcPosition(sim.getCurrentSimulationTime());
+
+			int x = getXonMap(ac.getLastX());
+			int y = getYonMap(ac.getLastY());
 			System.out.print(airCraftName + " is at x " + x + " y " + y);
-			
+
 			g.setColor(Color.RED);
 			g.fillOval(x, y, 5, 5);
 		}
 
 	}
 
+	/**
+	 * Scaling coordinate point to panel size
+	 * 
+	 * @param CoordinateX
+	 * @return Coordinate scaled
+	 */
 	public int getXonMap(double CoordinateX) {
 		float width = getWidth() - border; // kartenrand
 
@@ -86,12 +100,26 @@ public class Animation extends JFrame {
 
 	}
 
+	/**
+	 * Scaling coordinate point to panel size
+	 * 
+	 * @param CoordinateY
+	 * @return Coordinate scaled
+	 */
 	public int getYonMap(double CoordinateY) {
 		float height = getHeight() - border; // kartenrand
 		float einheitY = height / (ymax - ymin);
 
 		return (int) (einheitY * (ymax - CoordinateY) + border / 2);
 
+	}
+
+	public void addToQuery(Aircraft aircraft) {
+		aircraftList.add(aircraft);
+	}
+
+	public void removeFromQuery(Aircraft aircraft) {
+		aircraftList.remove(aircraft);
 	}
 
 }

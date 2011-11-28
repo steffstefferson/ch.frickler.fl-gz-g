@@ -7,15 +7,17 @@ import java.util.Vector;
  * @author ps Manages simulation clock, a event queue and world consisting of
  *         aircrafts and airports
  */
-public class Simulator implements EventScheduler {
+public class Simulator implements EventScheduler, EventHandler {
 
 	private static final int TIME_SCALE = 10000;
+	private static final long REPAINT_GAP = 100;
 	private SimWorld world;
 	private long startTimeMillis;
 
 	private Gui gui;
 
 	private Vector<Event> evList; // time ordered list
+	private Animation animation;
 
 	public Simulator(SimWorld world) {
 		this.world = world;
@@ -25,7 +27,28 @@ public class Simulator implements EventScheduler {
 
 	@Override
 	public long getCurrentSimulationTime() {
-		return (System.currentTimeMillis() - startTimeMillis) * 100 / TIME_SCALE;
+		return (System.currentTimeMillis() - startTimeMillis) * 100
+				/ TIME_SCALE;
+	}
+
+	@Override
+	public void processEvent(Event e, EventScheduler s) {
+		// we handle only query events!
+		if (e.getType() == Event.ADD_TO_ANIMATION) {
+			animation.addToQuery(e.getAirCraft());
+		} else if (e.getType() == Event.REMOVE_FROM_ANIMATION) {
+			animation.removeFromQuery(e.getAirCraft());
+		} else if (e.getType() == Event.REPAINT_ANIMATION) {
+			animation.repaint();
+
+			if (evList.size() > 0) {
+				Event eNew = new Event(Event.REPAINT_ANIMATION, this,
+						e.getTimeStamp() + REPAINT_GAP, null, null);
+				scheduleEvent(eNew);
+			}
+		} else
+			throw new RuntimeException("Scheduler can handle only QUERY events");
+
 	}
 
 	/*
@@ -45,7 +68,18 @@ public class Simulator implements EventScheduler {
 				break;
 			pos++;
 		}
+
 		evList.add(pos, e);
+
+		// If list is empty, start painting (again)
+		if (evList.size() <= 1) {
+			Event eNew = new Event(Event.REPAINT_ANIMATION, this,
+					e.getTimeStamp() + REPAINT_GAP, null, null);
+			scheduleEvent(eNew);
+			
+			gui.println("Start paint animation" + e.toString());
+		}
+
 	}
 
 	/**
@@ -56,15 +90,16 @@ public class Simulator implements EventScheduler {
 		final Event e = evList.remove(0);
 		final long eventTime = e.getTimeStamp();
 		final long currentSimulationTime = getCurrentSimulationTime();
-		if (currentSimulationTime < eventTime)
+		if (currentSimulationTime < eventTime) {
 			try {
 				Thread.sleep(eventTime - currentSimulationTime);
 			} catch (InterruptedException e1) {
 				e1.printStackTrace();
 			}
+		}
 		gui.repaint();
-
 		gui.println(e.toString()); // log the event
+
 		EventHandler eh = e.getEventHandler();
 		eh.processEvent(e, this);
 		// log the state of the object which is the target of this
@@ -137,12 +172,12 @@ public class Simulator implements EventScheduler {
 		}
 	}
 
-	public void InitGui() {
+	public void initGui() {
 		gui = new Gui();
 		gui.init(this);
-		
-		Animation a = new Animation(this);
-		a.setVisible(true);
+
+		animation = new Animation(this);
+		animation.setVisible(true);
 	}
 
 	public SimWorld getSimWorld() {
