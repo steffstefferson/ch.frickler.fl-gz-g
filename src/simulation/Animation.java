@@ -47,7 +47,7 @@ public class Animation extends JFrame {
 	public void paint(Graphics g) {
 		super.paint(g);
 
-		getContentPane().removeAll();
+//		getContentPane().removeAll();
 
 		// System.out.println("height: " + getHeight() + " width:" +
 		// getWidth());
