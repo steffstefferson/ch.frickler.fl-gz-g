@@ -25,6 +25,8 @@ public class Animation extends JFrame {
 
 	private float ymin = 120000;
 	private float ymax = 287000;
+	
+	private long currentTime;
 
 	// Liste mit allen Flugzeigen die geziechnet werden sollen
 	HashMap<Aircraft, Object> querySet = new HashMap<Aircraft, Object>();
@@ -47,8 +49,8 @@ public class Animation extends JFrame {
 
 		getContentPane().removeAll();
 
-		// System.out.print("einheitx " + einheitX + " einheity " + einheitY);
-		System.out.println("height: " + getHeight() + " width:" + getWidth());
+		
+		//System.out.println("height: " + getHeight() + " width:" + getWidth());
 
 		SimWorld world = sim.getSimWorld();
 		HashMap<String, Airport> aps = world.getAirports();
@@ -62,22 +64,24 @@ public class Animation extends JFrame {
 			// pane.setBounds(flughafenX, flughafenY, 100, 20);
 			// pane.setText(s);
 			// add(pane);
-			System.out.println(s + " flughafenX: " + flughafenX
-					+ " flughafenY: " + flughafenY);
+			//System.out.println(s + " flughafenX: " + flughafenX
+			//		+ " flughafenY: " + flughafenY);
 			g.drawString(s, (int) flughafenX, (int) flughafenY);
 			g.fillOval(flughafenX, flughafenY, 5, 5);
 
 		}
 
-		HashMap<String, Aircraft> acs = world.getAircrafts();
-		for (String airCraftName : acs.keySet()) {
-			Aircraft ac = acs.get(airCraftName);
+//		HashMap<String, Aircraft> acs = world.getAircrafts();
+		//for (String airCraftName : acs.keySet()) {
+		for (Aircraft ac : aircraftList) {
+	
+//			Aircraft ac = acs.get(airCraftName);
 
-			ac.calcPosition(sim.getCurrentSimulationTime());
+			ac.calcPosition(currentTime);
 
 			int x = getXonMap(ac.getLastX());
 			int y = getYonMap(ac.getLastY());
-			System.out.print(airCraftName + " is at x " + x + " y " + y);
+			//System.out.print(airCraftName + " is at x " + x + " y " + y);
 
 			g.setColor(Color.RED);
 			g.fillOval(x, y, 5, 5);
@@ -115,11 +119,23 @@ public class Animation extends JFrame {
 	}
 
 	public void addToQuery(Aircraft aircraft) {
+		System.out.println("Aircraft added: "  + aircraft + " size:" + aircraftList.size());
 		aircraftList.add(aircraft);
 	}
 
 	public void removeFromQuery(Aircraft aircraft) {
+		System.out.println("Aircraft removed: "  + aircraft + " size:" + aircraftList.size());
 		aircraftList.remove(aircraft);
 	}
+
+	public long getCurrentTime() {
+		return currentTime;
+	}
+
+	public void setCurrentTime(long currentTime) {
+		this.currentTime = currentTime;
+	}
+	
+	
 
 }

@@ -10,9 +10,9 @@ import java.util.Vector;
 public class Simulator implements EventScheduler, EventHandler {
 
 	private static final int TIME_SCALE = 10000;
-	private static final long REPAINT_GAP = 100;
+	private static final long REPAINT_GAP = 50;
 	private SimWorld world;
-	private long startTimeMillis;
+	private long startTimeMillis = 0;
 
 	private Gui gui;
 
@@ -22,13 +22,15 @@ public class Simulator implements EventScheduler, EventHandler {
 	public Simulator(SimWorld world) {
 		this.world = world;
 		evList = new Vector<Event>();
-		startTimeMillis = System.currentTimeMillis();
+	}
+
+	private long converToSimulationTime(long eventTime) {
+		return eventTime * 100 / TIME_SCALE;
 	}
 
 	@Override
 	public long getCurrentSimulationTime() {
-		return (System.currentTimeMillis() - startTimeMillis) * 100
-				/ TIME_SCALE;
+		return converToSimulationTime((System.currentTimeMillis() - startTimeMillis));
 	}
 
 	@Override
@@ -39,6 +41,7 @@ public class Simulator implements EventScheduler, EventHandler {
 		} else if (e.getType() == Event.REMOVE_FROM_ANIMATION) {
 			animation.removeFromQuery(e.getAirCraft());
 		} else if (e.getType() == Event.REPAINT_ANIMATION) {
+			animation.setCurrentTime(e.getTimeStamp());
 			animation.repaint();
 
 			if (evList.size() > 0) {
@@ -57,14 +60,23 @@ public class Simulator implements EventScheduler, EventHandler {
 	 * @see EventScheduler#scheduleEvent(Event)
 	 */
 	public void scheduleEvent(Event e) {
-		long tim = e.getTimeStamp();
+
+		long time = e.getTimeStamp();
 		final long currentSimulationTime = getCurrentSimulationTime();
-		if (tim < currentSimulationTime)
-			throw new RuntimeException("Causality error: " + this);
+		System.out.println("Schedule event: " + e + " currentSimulationTime"
+				+ currentSimulationTime);
+		// Check if simulation has started
+		if (startTimeMillis > 0) {
+			if (converToSimulationTime(time) < currentSimulationTime) {
+				throw new RuntimeException("Causality error: " + e + "tim: "
+						+ time + " currentSimulationTime"
+						+ currentSimulationTime);
+			}
+		}
 		int pos = 0;
 		while (pos < evList.size()) {
 			Event n = evList.get(pos);
-			if (n.getTimeStamp() > tim)
+			if (n.getTimeStamp() > time)
 				break;
 			pos++;
 		}
@@ -76,7 +88,7 @@ public class Simulator implements EventScheduler, EventHandler {
 			Event eNew = new Event(Event.REPAINT_ANIMATION, this,
 					e.getTimeStamp() + REPAINT_GAP, null, null);
 			scheduleEvent(eNew);
-			
+
 			gui.println("Start paint animation" + e.toString());
 		}
 
@@ -87,23 +99,27 @@ public class Simulator implements EventScheduler, EventHandler {
 	 * processes the event
 	 */
 	public void processNextEvent() {
+
 		final Event e = evList.remove(0);
-		final long eventTime = e.getTimeStamp();
+		System.out.println("Process next event:" + e);
+		final long eventTimeInSimTime = converToSimulationTime(e.getTimeStamp());
 		final long currentSimulationTime = getCurrentSimulationTime();
-		if (currentSimulationTime < eventTime) {
+		if (currentSimulationTime < eventTimeInSimTime) {
 			try {
-				Thread.sleep(eventTime - currentSimulationTime);
+
+				long sleepTime = eventTimeInSimTime - currentSimulationTime;
+				Thread.sleep(sleepTime);
 			} catch (InterruptedException e1) {
 				e1.printStackTrace();
 			}
 		}
-		gui.repaint();
-		gui.println(e.toString()); // log the event
+		// gui.repaint();
+		// gui.println(e.toString()); // log the event
 
 		EventHandler eh = e.getEventHandler();
 		eh.processEvent(e, this);
 		// log the state of the object which is the target of this
-		gui.println(e.getEventHandler().toString());
+		// gui.println(e.getEventHandler().toString());
 
 	}
 
@@ -111,6 +127,7 @@ public class Simulator implements EventScheduler, EventHandler {
 	 * This is the main simulation loop
 	 */
 	public void runSimulation() {
+		startTimeMillis = System.currentTimeMillis();
 		int evCnt = 0;
 		while (evList.size() > 0) {
 			processNextEvent();

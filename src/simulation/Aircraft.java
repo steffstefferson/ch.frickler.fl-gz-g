@@ -231,6 +231,15 @@ public class Aircraft implements EventHandler {
 	}
 
 	public void calcPosition(long currentSimulationTime) {
+		if (getState() == ON_HOLDING_LOOP) {
+			System.out.println("In holding luuuuup");
+		} else {
+			calcFlightPosition(currentSimulationTime);
+		}
+
+	}
+
+	private void calcFlightPosition(long currentSimulationTime) {
 		double targetX = destination.getX1();
 		double targetY = destination.getY1();
 
@@ -253,6 +262,5 @@ public class Aircraft implements EventHandler {
 
 		this.setLastX(newX);
 		this.setLastY(newY);
-
 	}
 }
