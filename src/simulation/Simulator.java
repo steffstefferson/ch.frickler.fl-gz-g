@@ -13,7 +13,8 @@ public class Simulator implements EventScheduler, EventHandler {
 	private static final int TIME_SCALE = 1000;
 	private static final long REPAINT_GAP = 50;
 	private SimWorld world;
-	private long startTimeMillis = 0;
+	//private long startTimeMillis = 0;
+	TimeManager timeMgr = new TimeManager();
 
 	private Gui gui;
 
@@ -24,7 +25,7 @@ public class Simulator implements EventScheduler, EventHandler {
 		this.world = world;
 		evList = new Vector<Event>();
 	}
-
+/*
 	private long converToSimulationTime(long eventTime) {
 		return eventTime * 100 / TIME_SCALE;
 	}
@@ -33,7 +34,7 @@ public class Simulator implements EventScheduler, EventHandler {
 	public long getCurrentSimulationTime() {
 		return converToSimulationTime((System.currentTimeMillis() - startTimeMillis));
 	}
-
+*/
 	@Override
 	public void processEvent(Event e, EventScheduler s) {
 		// we handle only query events!
@@ -62,22 +63,26 @@ public class Simulator implements EventScheduler, EventHandler {
 	 */
 	public void scheduleEvent(Event e) {
 
-		long time = e.getTimeStamp();
-		final long currentSimulationTime = getCurrentSimulationTime();
-		System.out.println("Schedule event: " + e + " currentSimulationTime"
-				+ currentSimulationTime);
+		long timeEvent = e.getTimeStamp();
+		//long time = timeManager.getWallClockStartTime()+timedelta;
+		//final long currentSimulationTime = timeManager.getSimulationTime();
+		//final long currentSimulationTime = getCurrentSimulationTime();
+		System.out.println("Schedule event: " + e + " schedule in: "+timeMgr.getSimTimeDelta(timeEvent));
 		// Check if simulation has started
-		if (startTimeMillis > 0) {
-			if (converToSimulationTime(time) < currentSimulationTime) {
+		if (timeMgr.isStarted()) {
+			if (timeMgr.isTimeInPast(timeEvent)) {
+//			if (converToSimulationTime(time) < currentSimulationTime) {
+				System.out.println("Error: Event was planed for"+timeMgr.getEventSchedulTime(e.getTimeStamp())+ " now is "+timeMgr.getSimulationTime());
 				throw new RuntimeException("Causality error: " + e + "tim: "
-						+ time + " currentSimulationTime"
-						+ currentSimulationTime);
+						+ timeEvent + " currentSimulationTime"
+						+ timeMgr.getSimulationTime());
+				
 			}
 		}
 		int pos = 0;
 		while (pos < evList.size()) {
 			Event n = evList.get(pos);
-			if (n.getTimeStamp() > time)
+			if (n.getTimeStamp() > timeEvent)
 				break;
 			pos++;
 		}
@@ -103,13 +108,18 @@ public class Simulator implements EventScheduler, EventHandler {
 
 		final Event e = evList.remove(0);
 		System.out.println("Process next event:" + e);
-		final long eventTimeInSimTime = converToSimulationTime(e.getTimeStamp());
-		final long currentSimulationTime = getCurrentSimulationTime();
-		if (currentSimulationTime < eventTimeInSimTime) {
+		//final long eventTimeInSimTime = converToSimulationTime(e.getTimeStamp());
+		//final long currentSimulationTime = getCurrentSimulationTime();
+		if (!timeMgr.isTimeInPast(e.getTimeStamp())) {
+		//if (currentSimulationTime < eventTimeInSimTime) {
 			try {
 
-				long sleepTime = eventTimeInSimTime - currentSimulationTime;
-				Thread.sleep(sleepTime);
+				//long sleepTime = eventTimeInSimTime - currentSimulationTime;
+				long sleepTime = timeMgr.getTimeDeltaForNextEvent(e.getTimeStamp())-150; // process delta
+				if(sleepTime>10){
+					System.out.println("sleep for: "+sleepTime + " now is "+timeMgr.getSimulationTime()+ " realtime sleep: "+timeMgr.convertToWallClockTime(sleepTime));
+					Thread.sleep(timeMgr.convertToWallClockTime(sleepTime));
+				}
 			} catch (InterruptedException e1) {
 				e1.printStackTrace();
 			}
@@ -128,7 +138,10 @@ public class Simulator implements EventScheduler, EventHandler {
 	 * This is the main simulation loop
 	 */
 	public void runSimulation() {
-		startTimeMillis = System.currentTimeMillis();
+		//startTimeMillis = System.currentTimeMillis();
+		timeMgr.initTime();
+		System.out.println("CurrentSimulationTime: "+timeMgr.getSimulationTime());
+		System.out.println("CurrentWallClockTime: "+timeMgr.getWallClockTime());
 		int evCnt = 0;
 		while (evList.size() > 0) {
 			processNextEvent();
@@ -146,7 +159,7 @@ public class Simulator implements EventScheduler, EventHandler {
 		// Random Generator:
 		Random rand = new Random(1234);
 		// create airports
-		String[] airportNames = { "ZURICH", "GENF", "BASEL" };
+		String[] airportNames = { "ZURICH", "GENF", "BASEL","BERNE" };
 		Airport ap = new Airport("ZURICH", 684000, 256000, 683000, 259000);
 		world.addAirport(ap);
 		ap = new Airport("GENF", 497000, 120000, 499000, 122000);
@@ -174,10 +187,12 @@ public class Simulator implements EventScheduler, EventHandler {
 			while (ap == ac.getCurrentAirPort()) {
 				ap = world.getAirport(airportNames[rand.nextInt(3)]);
 			}
-			Flight f = new Flight(rand.nextInt(1000), ap);
+			int scheduleTime = 500+rand.nextInt(10000);
+			System.out.println("SchedulTime for Flight i:"+i+" is "+scheduleTime);
+			Flight f = new Flight(scheduleTime, ap);
 			ac.getFlightPlan().addFlight(f);
 			// Return flight
-			f = new Flight(rand.nextInt(1000), ac.getCurrentAirPort());
+			//f = new Flight(rand.nextInt(1000), ac.getCurrentAirPort());
 		}
 
 		// System.out.println(world);

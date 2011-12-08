@@ -41,17 +41,10 @@ public class Animation extends JFrame {
 
 		setBounds(0, 0, 1024, 768);
 		setLayout(null);
+		
 	}
 
-	// Zeichnen
-	public void paint(Graphics g) {
-		super.paint(g);
-
-//		getContentPane().removeAll();
-
-		// System.out.println("height: " + getHeight() + " width:" +
-		// getWidth());
-
+	private void printAirports(Graphics g){
 		SimWorld world = sim.getSimWorld();
 		HashMap<String, Airport> aps = world.getAirports();
 		for (String s : aps.keySet()) {
@@ -60,38 +53,33 @@ public class Animation extends JFrame {
 			int flughafenX = getXonMap(a.getX1());
 			int flughafenY = getYonMap(a.getY1());
 
-			// JTextPane pane = new JTextPane();
-			// pane.setBounds(flughafenX, flughafenY, 100, 20);
-			// pane.setText(s);
-			// add(pane);
-			// System.out.println(s + " flughafenX: " + flughafenX
-			// + " flughafenY: " + flughafenY);
 			g.drawString(s, flughafenX + 10, flughafenY - 10);
 
 			int[] x = new int[] { flughafenX, getXonMap(a.getX2()) };
 			int[] y = new int[] { flughafenY, getYonMap(a.getY2()) };
 
 			g.drawPolygon(x, y, x.length);
-			// g.fillOval(flughafenX, flughafenY, 5, 5);
-
+		
 		}
 
-		// HashMap<String, Aircraft> acs = world.getAircrafts();
-		// for (String airCraftName : acs.keySet()) {
-		for (Aircraft ac : aircraftList) {
+	}
+	
+	// Zeichnen
+	public void paint(Graphics g) {
+		super.paint(g); // this causes the flackering
+		printAirports(g);
 
-			// Aircraft ac = acs.get(airCraftName);
+		for (Aircraft ac : aircraftList) {
 
 			ac.calcPosition(currentTime);
 
 			int x = getXonMap(ac.getLastX());
 			int y = getYonMap(ac.getLastY());
-			// System.out.print(airCraftName + " is at x " + x + " y " + y);
-
+			
 			g.setColor(Color.RED);
 			g.fillOval(x, y, 5, 5);
 		}
-
+		repaint();
 	}
 
 	/**

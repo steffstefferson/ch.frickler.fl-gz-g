@@ -45,11 +45,7 @@ public class BaseSimTest {
 				// TODO Auto-generated method stub
 				}
 			
-			@Override
-			public long getCurrentSimulationTime() {
-				// TODO Auto-generated method stub
-				return 0;
-			}
+
 		};
 	
 		
