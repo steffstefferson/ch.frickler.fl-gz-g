@@ -128,14 +128,18 @@ public class Simulator implements EventScheduler, EventHandler {
 		// Random Generator:
 		Random rand = new Random(1234);
 		// create airports
-		String[] airportNames = { "ZURICH", "GENF", "BASEL" };
-		Airport ap = new Airport("ZURICH", 684000, 256000, 683000, 259000);
+		String[] airportNames = { "ZURICH", "GENF", "BASEL","BERNE" };
+		Airport ap;
+		ap = new Airport("ZURICH", 684000, 256000, 683000, 259000);
 		world.addAirport(ap);
 		ap = new Airport("GENF", 497000, 120000, 499000, 122000);
 		world.addAirport(ap);
 		ap = new Airport("BASEL", 599000, 287000, 601000, 288000);
 		world.addAirport(ap);
 
+			ap = new Airport("BERNE", 550000, 207000, 552000, 208000);
+		world.addAirport(ap);
+		
 		// create 100 aircrafts and choose an arbitrary airport
 		for (int i = 0; i < intAirCrafts; i++) {
 			// Random Airport:
