@@ -26,6 +26,8 @@ public class Animation extends JFrame {
 	private float ymin = 120000;
 	private float ymax = 287000;
 
+	private long currentTime;
+
 	// Liste mit allen Flugzeigen die geziechnet werden sollen
 	HashMap<Aircraft, Object> querySet = new HashMap<Aircraft, Object>();
 
@@ -37,7 +39,7 @@ public class Animation extends JFrame {
 		this.sim = sim;
 		this.aircraftList = new HashSet<Aircraft>();
 
-		setBounds(0, 0, 600, 600);
+		setBounds(0, 0, 1024, 768);
 		setLayout(null);
 	}
 
@@ -45,10 +47,10 @@ public class Animation extends JFrame {
 	public void paint(Graphics g) {
 		super.paint(g);
 
-		getContentPane().removeAll();
+//		getContentPane().removeAll();
 
-		// System.out.print("einheitx " + einheitX + " einheity " + einheitY);
-		System.out.println("height: " + getHeight() + " width:" + getWidth());
+		// System.out.println("height: " + getHeight() + " width:" +
+		// getWidth());
 
 		SimWorld world = sim.getSimWorld();
 		HashMap<String, Airport> aps = world.getAirports();
@@ -56,28 +58,35 @@ public class Animation extends JFrame {
 			Airport a = aps.get(s);
 
 			int flughafenX = getXonMap(a.getX1());
-			int flughafenY = getYonMap(a.getY2());
+			int flughafenY = getYonMap(a.getY1());
 
 			// JTextPane pane = new JTextPane();
 			// pane.setBounds(flughafenX, flughafenY, 100, 20);
 			// pane.setText(s);
 			// add(pane);
-			System.out.println(s + " flughafenX: " + flughafenX
-					+ " flughafenY: " + flughafenY);
-			g.drawString(s, (int) flughafenX, (int) flughafenY);
-			g.fillOval(flughafenX, flughafenY, 5, 5);
+			// System.out.println(s + " flughafenX: " + flughafenX
+			// + " flughafenY: " + flughafenY);
+			g.drawString(s, flughafenX + 10, flughafenY - 10);
+
+			int[] x = new int[] { flughafenX, getXonMap(a.getX2()) };
+			int[] y = new int[] { flughafenY, getYonMap(a.getY2()) };
+
+			g.drawPolygon(x, y, x.length);
+			// g.fillOval(flughafenX, flughafenY, 5, 5);
 
 		}
 
-		HashMap<String, Aircraft> acs = world.getAircrafts();
-		for (String airCraftName : acs.keySet()) {
-			Aircraft ac = acs.get(airCraftName);
+		// HashMap<String, Aircraft> acs = world.getAircrafts();
+		// for (String airCraftName : acs.keySet()) {
+		for (Aircraft ac : aircraftList) {
 
-			ac.calcPosition(sim.getCurrentSimulationTime());
+			// Aircraft ac = acs.get(airCraftName);
+
+			ac.calcPosition(currentTime);
 
 			int x = getXonMap(ac.getLastX());
 			int y = getYonMap(ac.getLastY());
-			System.out.print(airCraftName + " is at x " + x + " y " + y);
+			// System.out.print(airCraftName + " is at x " + x + " y " + y);
 
 			g.setColor(Color.RED);
 			g.fillOval(x, y, 5, 5);
@@ -115,11 +124,23 @@ public class Animation extends JFrame {
 	}
 
 	public void addToQuery(Aircraft aircraft) {
+		System.out.println("Aircraft added: " + aircraft + " size:"
+				+ aircraftList.size());
 		aircraftList.add(aircraft);
 	}
 
 	public void removeFromQuery(Aircraft aircraft) {
+		System.out.println("Aircraft removed: " + aircraft + " size:"
+				+ aircraftList.size());
 		aircraftList.remove(aircraft);
+	}
+
+	public long getCurrentTime() {
+		return currentTime;
+	}
+
+	public void setCurrentTime(long currentTime) {
+		this.currentTime = currentTime;
 	}
 
 }

@@ -179,7 +179,6 @@ public class Airport implements EventHandler {
 	
 	@Override
 	public void processEvent(Event e, EventScheduler sched) {
-		//System.out.println("processing "+e);
 
 		if (e.getType()==Event.READY_FOR_DEPARTURE){
 			// we put the aircraft to the startQueue 
@@ -200,7 +199,6 @@ public class Airport implements EventHandler {
 			ac.setLastX(getX2());
 			ac.setLastY(getY2());
 			ac.setLastTime(e.getTimeStamp());		
-			// System.out.println(ac);
 			addToHoldingQueue(ac);
 			Event eNew = new Event(Event.PROCESS_QUEUES,this,e.getTimeStamp(),this,null);
 			sched.scheduleEvent(eNew);
@@ -231,7 +229,6 @@ public class Airport implements EventHandler {
 				}
 			}
 		}
-		// System.out.println(this);
 	}
 
 	public double getDistanceTo(Airport destination) {
