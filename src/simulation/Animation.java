@@ -67,6 +67,7 @@ public class Animation extends JFrame {
 	// Zeichnen
 	public void paint(Graphics g) {
 		super.paint(g); // this causes the flackering
+		
 		printAirports(g);
 
 		for (Aircraft ac : aircraftList) {
@@ -79,7 +80,6 @@ public class Animation extends JFrame {
 			g.setColor(Color.RED);
 			g.fillOval(x, y, 5, 5);
 		}
-		repaint();
 	}
 
 	/**

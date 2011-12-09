@@ -1,12 +1,11 @@
 package simulation;
 
-import javax.xml.stream.events.StartDocument;
 
 
 public class TimeManager {
 
 	private long startTime =0;
-	private long scalFactor = 5;
+	private long scaleFactor = 100;
 	
 
 /*
@@ -14,12 +13,12 @@ public class TimeManager {
 		return System.currentTimeMillis();
 	}
 */
-	public long getScalFactor() {
-		return scalFactor;
+	public long getScaleFactor() {
+		return scaleFactor;
 	}
 
-	public void setScalFactor(long scalFactor) {
-		this.scalFactor = scalFactor;
+	public void setScaleFactor(long scalFactor) {
+		this.scaleFactor = scalFactor;
 	}
 	
 	
@@ -43,12 +42,12 @@ public class TimeManager {
 	}
 	
 	public long convertToSimulationTime(long wallClockTime){
-		long value = scalFactor * wallClockTime;
+		long value = scaleFactor * wallClockTime;
 		return value;
 	}
 	
 	public long convertToWallClockTime(long simulationTime){
-		long value =  simulationTime / scalFactor;
+		long value =  simulationTime / scaleFactor;
 		return value;
 	}
 

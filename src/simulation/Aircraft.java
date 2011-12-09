@@ -1,6 +1,5 @@
 package simulation;
 
-import java.awt.Point;
 
 public class Aircraft implements EventHandler {
 	// states

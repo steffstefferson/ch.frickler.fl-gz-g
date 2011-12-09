@@ -11,6 +11,10 @@ import javax.swing.text.DefaultCaret;
  */
 public class Gui extends JFrame {
 
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
 	private JTextArea jtaDebug;
 
 	public void init(Simulator sim) {
