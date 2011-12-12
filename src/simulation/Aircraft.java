@@ -1,6 +1,5 @@
 package simulation;
 
-
 public class Aircraft implements EventHandler {
 	// states
 	public static final int ON_GROUND = 0;
@@ -247,13 +246,6 @@ public class Aircraft implements EventHandler {
 		double endRunwayX = destination.getX2();
 		double endRunwayY = destination.getY2();
 
-		// Point beginRunway = new Point();
-		// beginRunway.setLocation(destination.getX1(), destination.getY1());
-		//
-		// Point endRunway = new Point();
-		// endRunway.setLocation(destination.getX2(), destination.getY2());
-
-		// calc l
 		double runwayX = endRunwayX - beginRunwayX;
 		double runwayY = endRunwayY - beginRunwayY;
 
@@ -261,6 +253,10 @@ public class Aircraft implements EventHandler {
 		double runwayYorthogonal = runwayX;
 
 		double timeDelta = currentSimulationTime - getLastTime();
+
+		// skip calculation if aircraft has moved on in the meantime
+		if (timeDelta < 0)
+			return;
 
 		double angularVelocity = 1; // (2 * Math.PI) / 1;
 
@@ -294,6 +290,10 @@ public class Aircraft implements EventHandler {
 		double nY = distanceY / betrag;
 
 		double timeDelta = currentSimulationTime - getLastTime();
+
+		// skip calculation if aircraft has moved on in the meantime
+		if (timeDelta < 0)
+			return;
 
 		double newX = orignX + timeDelta * getMaxSpeed() * nX;
 		double newY = orignY + timeDelta * getMaxSpeed() * nY;

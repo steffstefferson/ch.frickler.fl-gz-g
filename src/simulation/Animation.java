@@ -3,13 +3,15 @@ package simulation;
 import java.awt.Color;
 import java.awt.Graphics;
 import java.awt.HeadlessException;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Set;
 
 import javax.swing.JFrame;
 
-public class Animation extends JFrame {
+public class Animation extends JFrame implements ActionListener {
 
 	/**
 	 * 
@@ -41,10 +43,10 @@ public class Animation extends JFrame {
 
 		setBounds(0, 0, 1024, 768);
 		setLayout(null);
-		
+
 	}
 
-	private void printAirports(Graphics g){
+	private void printAirports(Graphics g) {
 		SimWorld world = sim.getSimWorld();
 		HashMap<String, Airport> aps = world.getAirports();
 		for (String s : aps.keySet()) {
@@ -59,15 +61,15 @@ public class Animation extends JFrame {
 			int[] y = new int[] { flughafenY, getYonMap(a.getY2()) };
 
 			g.drawPolygon(x, y, x.length);
-		
+
 		}
 
 	}
-	
+
 	// Zeichnen
 	public void paint(Graphics g) {
 		super.paint(g); // this causes the flackering
-		
+
 		printAirports(g);
 
 		for (Aircraft ac : aircraftList) {
@@ -76,7 +78,7 @@ public class Animation extends JFrame {
 
 			int x = getXonMap(ac.getLastX());
 			int y = getYonMap(ac.getLastY());
-			
+
 			g.setColor(Color.RED);
 			g.fillOval(x, y, 5, 5);
 		}
@@ -129,6 +131,11 @@ public class Animation extends JFrame {
 
 	public void setCurrentTime(long currentTime) {
 		this.currentTime = currentTime;
+	}
+
+	@Override
+	public void actionPerformed(ActionEvent e) {
+		this.repaint();
 	}
 
 }

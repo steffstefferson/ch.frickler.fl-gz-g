@@ -1,4 +1,3 @@
-
 package simulation;
 
 import java.util.Random;
@@ -10,11 +9,9 @@ import java.util.Vector;
  */
 public class Simulator implements EventScheduler, EventHandler {
 
-	private static final int TIME_SCALE = 1000;
-	private static final long REPAINT_GAP = 50;
+	private Clock clock = new Clock();
+
 	private SimWorld world;
-	//private long startTimeMillis = 0;
-	TimeManager timeMgr = new TimeManager();
 
 	private Gui gui;
 
@@ -25,16 +22,7 @@ public class Simulator implements EventScheduler, EventHandler {
 		this.world = world;
 		evList = new Vector<Event>();
 	}
-/*
-	private long converToSimulationTime(long eventTime) {
-		return eventTime * 100 / TIME_SCALE;
-	}
 
-	@Override
-	public long getCurrentSimulationTime() {
-		return converToSimulationTime((System.currentTimeMillis() - startTimeMillis));
-	}
-*/
 	@Override
 	public void processEvent(Event e, EventScheduler s) {
 		// we handle only query events!
@@ -48,7 +36,7 @@ public class Simulator implements EventScheduler, EventHandler {
 
 			if (evList.size() > 0) {
 				Event eNew = new Event(Event.REPAINT_ANIMATION, this,
-						e.getTimeStamp() + REPAINT_GAP, null, null);
+						e.getTimeStamp() + Clock.REPAINT_GAP, null, null);
 				scheduleEvent(eNew);
 			}
 		} else
@@ -64,40 +52,36 @@ public class Simulator implements EventScheduler, EventHandler {
 	public void scheduleEvent(Event e) {
 
 		long timeEvent = e.getTimeStamp();
-		//long time = timeManager.getWallClockStartTime()+timedelta;
-		//final long currentSimulationTime = timeManager.getSimulationTime();
-		//final long currentSimulationTime = getCurrentSimulationTime();
-		System.out.println("Schedule event: " + e + " schedule in: "+timeMgr.getSimTimeDelta(timeEvent));
-		// Check if simulation has started
-		if (timeMgr.isStarted()) {
-			if (timeMgr.isTimeInPast(timeEvent)) {
-//			if (converToSimulationTime(time) < currentSimulationTime) {
-				System.out.println("Error: Event was planed for"+timeMgr.getEventSchedulTime(e.getTimeStamp())+ " now is "+timeMgr.getSimulationTime());
-				throw new RuntimeException("Causality error: " + e + "tim: "
-						+ timeEvent + " currentSimulationTime"
-						+ timeMgr.getSimulationTime());
-				
-			}
-		}
-		int pos = 0;
-		while (pos < evList.size()) {
-			Event n = evList.get(pos);
-			if (n.getTimeStamp() > timeEvent)
-				break;
-			pos++;
-		}
+		
+		if (clock.isInPast(timeEvent)) {
+			throw new RuntimeException("Causality error: " + e + "tim: "
+					+ timeEvent + " currentSimulationTime"
+					+ clock.currentSimulationTime());
 
-		evList.add(pos, e);
+		}
+		insertEvent(e);
 
 		// If list is empty, start painting (again)
 		if (evList.size() <= 1) {
 			Event eNew = new Event(Event.REPAINT_ANIMATION, this,
-					e.getTimeStamp() + REPAINT_GAP, null, null);
+					e.getTimeStamp() + Clock.REPAINT_GAP, null, null);
 			scheduleEvent(eNew);
 
 			gui.println("Start paint animation" + e.toString());
 		}
 
+	}
+
+	private void insertEvent(Event e) {
+		int pos = 0;
+		while (pos < evList.size()) {
+			Event n = evList.get(pos);
+			if (n.getTimeStamp() > e.getTimeStamp())
+				break;
+			pos++;
+		}
+
+		evList.add(pos, e);
 	}
 
 	/**
@@ -106,31 +90,14 @@ public class Simulator implements EventScheduler, EventHandler {
 	 */
 	public void processNextEvent() {
 
-		final Event e = evList.remove(0);
+		final Event e = evList.remove(0); // TODO only remove if we are sure we are allowed to process
 		System.out.println("Process next event:" + e);
-		//final long eventTimeInSimTime = converToSimulationTime(e.getTimeStamp());
-		//final long currentSimulationTime = getCurrentSimulationTime();
-		if (!timeMgr.isTimeInPast(e.getTimeStamp())) {
-		//if (currentSimulationTime < eventTimeInSimTime) {
-			try {
-
-				//long sleepTime = eventTimeInSimTime - currentSimulationTime;
-				long sleepTime = timeMgr.getTimeDeltaForNextEvent(e.getTimeStamp())-150; // process delta
-				if(sleepTime>10){
-					System.out.println("sleep for: "+sleepTime + " now is "+timeMgr.getSimulationTime()+ " realtime sleep: "+timeMgr.convertToWallClockTime(sleepTime));
-					Thread.sleep(timeMgr.convertToWallClockTime(sleepTime));
-				}
-			} catch (InterruptedException e1) {
-				e1.printStackTrace();
-			}
+		if (e.getTimeStamp() > clock.currentSimulationTime()) {
+			clock.sleepUntil(e.getTimeStamp());
 		}
-		// gui.repaint();
-		// gui.println(e.toString()); // log the event
 
 		EventHandler eh = e.getEventHandler();
 		eh.processEvent(e, this);
-		// log the state of the object which is the target of this
-		// gui.println(e.getEventHandler().toString());
 
 	}
 
@@ -138,10 +105,6 @@ public class Simulator implements EventScheduler, EventHandler {
 	 * This is the main simulation loop
 	 */
 	public void runSimulation() {
-		//startTimeMillis = System.currentTimeMillis();
-		timeMgr.initTime();
-		System.out.println("CurrentSimulationTime: "+timeMgr.getSimulationTime());
-		System.out.println("CurrentWallClockTime: "+timeMgr.getWallClockTime());
 		int evCnt = 0;
 		while (evList.size() > 0) {
 			processNextEvent();
@@ -159,14 +122,14 @@ public class Simulator implements EventScheduler, EventHandler {
 		// Random Generator:
 		Random rand = new Random(1234);
 		// create airports
-		String[] airportNames = { "ZURICH", "GENF", "BASEL","BERNE" };
+		String[] airportNames = { "ZURICH", "GENF", "BASEL", "BERNE" };
 		Airport ap = new Airport("ZURICH", 684000, 256000, 683000, 259000);
 		world.addAirport(ap);
 		ap = new Airport("GENF", 497000, 120000, 499000, 122000);
 		world.addAirport(ap);
 		ap = new Airport("BASEL", 599000, 287000, 601000, 288000);
 		world.addAirport(ap);
-		
+
 		ap = new Airport("BERNE", 550000, 207000, 552000, 208000);
 		world.addAirport(ap);
 
@@ -187,12 +150,13 @@ public class Simulator implements EventScheduler, EventHandler {
 			while (ap == ac.getCurrentAirPort()) {
 				ap = world.getAirport(airportNames[rand.nextInt(3)]);
 			}
-			int scheduleTime = 500+rand.nextInt(10000);
-			System.out.println("SchedulTime for Flight i:"+i+" is "+scheduleTime);
+			int scheduleTime = 500 + rand.nextInt(10000);
+			System.out.println("SchedulTime for Flight i:" + i + " is "
+					+ scheduleTime);
 			Flight f = new Flight(scheduleTime, ap);
 			ac.getFlightPlan().addFlight(f);
 			// Return flight
-			//f = new Flight(rand.nextInt(1000), ac.getCurrentAirPort());
+			// f = new Flight(rand.nextInt(1000), ac.getCurrentAirPort());
 		}
 
 		// System.out.println(world);
@@ -221,4 +185,3 @@ public class Simulator implements EventScheduler, EventHandler {
 	}
 
 }
-
