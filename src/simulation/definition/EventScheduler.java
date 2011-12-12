@@ -1,4 +1,6 @@
-package simulation;
+package simulation.definition;
+
+import simulation.model.Event;
 
 public interface EventScheduler {
 	public void scheduleEvent(Event e);

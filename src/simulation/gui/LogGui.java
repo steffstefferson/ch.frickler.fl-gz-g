@@ -1,15 +1,17 @@
-package simulation;
+package simulation.gui;
 
 import javax.swing.JFrame;
 import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
 import javax.swing.text.DefaultCaret;
 
+import simulation.Simulator;
+
 /**
  * @author ps A frame with a JTextArea in a JScrollPane which serves as a log -
  *         window
  */
-public class Gui extends JFrame {
+public class LogGui extends JFrame {
 
 	/**
 	 * 

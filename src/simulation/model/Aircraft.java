@@ -1,4 +1,7 @@
-package simulation;
+package simulation.model;
+
+import simulation.definition.EventHandler;
+import simulation.definition.EventScheduler;
 
 public class Aircraft implements EventHandler {
 	// states

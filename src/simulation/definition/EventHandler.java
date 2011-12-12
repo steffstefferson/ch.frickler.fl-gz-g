@@ -1,4 +1,6 @@
-package simulation;
+package simulation.definition;
+
+import simulation.model.Event;
 
 /**
  * @author ps

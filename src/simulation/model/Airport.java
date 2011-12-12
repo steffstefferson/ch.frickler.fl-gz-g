@@ -1,7 +1,10 @@
-package simulation;
+package simulation.model;
 
 import java.util.HashSet;
 import java.util.LinkedList;
+
+import simulation.definition.EventHandler;
+import simulation.definition.EventScheduler;
 
 
 

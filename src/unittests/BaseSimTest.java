@@ -8,6 +8,12 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 
 import simulation.*;
+import simulation.definition.EventScheduler;
+import simulation.model.Aircraft;
+import simulation.model.Airport;
+import simulation.model.Event;
+import simulation.model.Flight;
+import simulation.model.SimWorld;
 
 
 public class BaseSimTest {

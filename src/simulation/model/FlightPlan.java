@@ -1,4 +1,4 @@
-package simulation;
+package simulation.model;
 
 
 import java.util.LinkedList;

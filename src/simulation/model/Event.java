@@ -1,4 +1,6 @@
-package simulation;
+package simulation.model;
+
+import simulation.definition.EventHandler;
 
 public class Event {
 	// Event - Types

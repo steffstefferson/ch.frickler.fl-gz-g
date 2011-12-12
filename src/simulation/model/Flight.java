@@ -1,4 +1,4 @@
-package simulation;
+package simulation.model;
 
 
 public class Flight {

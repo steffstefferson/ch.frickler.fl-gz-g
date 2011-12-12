@@ -1,4 +1,4 @@
-package simulation;
+package simulation.gui;
 
 import java.awt.Color;
 import java.awt.Graphics;
@@ -11,6 +11,12 @@ import java.util.Set;
 
 import javax.swing.JFrame;
 
+import simulation.Simulator;
+import simulation.logic.Clock;
+import simulation.model.Aircraft;
+import simulation.model.Airport;
+import simulation.model.SimWorld;
+
 public class Animation extends JFrame implements ActionListener {
 
 	/**
@@ -18,27 +24,22 @@ public class Animation extends JFrame implements ActionListener {
 	 */
 	private static final long serialVersionUID = 1L;
 
-	private Simulator sim;
+	private static final int BOARDER = 160;
 
-	private int border = 160;
-
-	private float xmin = 497000;
-	private float xmax = 684000;
-
-	private float ymin = 120000;
-	private float ymax = 287000;
-
-	private long currentTime;
-
-	// Liste mit allen Flugzeigen die geziechnet werden sollen
-	HashMap<Aircraft, Object> querySet = new HashMap<Aircraft, Object>();
+	private static final float X_MIN = 497000;
+	private static final float X_MAX = 684000;
+	private static final float Y_MIN = 120000;
+	private static final float Y_MAX = 287000;
 
 	private Set<Aircraft> aircraftList;
+	private Simulator sim;
+	private Clock clock;
 
-	public Animation(Simulator sim) throws HeadlessException {
+	public Animation(Simulator sim, Clock c) throws HeadlessException {
 		super();
 
 		this.sim = sim;
+		this.clock = c;
 		this.aircraftList = new HashSet<Aircraft>();
 
 		setBounds(0, 0, 1024, 768);
@@ -66,15 +67,15 @@ public class Animation extends JFrame implements ActionListener {
 
 	}
 
-	// Zeichnen
 	public void paint(Graphics g) {
 		super.paint(g); // this causes the flackering
 
 		printAirports(g);
 
+		// TODO: Fredsave because of ConcurrentModificationException?
 		for (Aircraft ac : aircraftList) {
 
-			ac.calcPosition(currentTime);
+			ac.calcPosition(clock.currentSimulationTime());
 
 			int x = getXonMap(ac.getLastX());
 			int y = getYonMap(ac.getLastY());
@@ -91,11 +92,11 @@ public class Animation extends JFrame implements ActionListener {
 	 * @return Coordinate scaled
 	 */
 	public int getXonMap(double CoordinateX) {
-		float width = getWidth() - border; // kartenrand
+		float width = getWidth() - BOARDER; // map boarder
 
-		float einheitX = width / (xmax - xmin);
+		float einheitX = width / (X_MAX - X_MIN);
 
-		return (int) (width - (einheitX * (xmax - CoordinateX)) + border / 2);
+		return (int) (width - (einheitX * (X_MAX - CoordinateX)) + BOARDER / 2);
 
 	}
 
@@ -106,31 +107,18 @@ public class Animation extends JFrame implements ActionListener {
 	 * @return Coordinate scaled
 	 */
 	public int getYonMap(double CoordinateY) {
-		float height = getHeight() - border; // kartenrand
-		float einheitY = height / (ymax - ymin);
+		float height = getHeight() - BOARDER; // map boarder
+		float einheitY = height / (Y_MAX - Y_MIN);
 
-		return (int) (einheitY * (ymax - CoordinateY) + border / 2);
-
+		return (int) (einheitY * (Y_MAX - CoordinateY) + BOARDER / 2);
 	}
 
 	public void addToQuery(Aircraft aircraft) {
-		System.out.println("Aircraft added: " + aircraft + " size:"
-				+ aircraftList.size());
 		aircraftList.add(aircraft);
 	}
 
 	public void removeFromQuery(Aircraft aircraft) {
-		System.out.println("Aircraft removed: " + aircraft + " size:"
-				+ aircraftList.size());
 		aircraftList.remove(aircraft);
-	}
-
-	public long getCurrentTime() {
-		return currentTime;
-	}
-
-	public void setCurrentTime(long currentTime) {
-		this.currentTime = currentTime;
 	}
 
 	@Override
