@@ -23,13 +23,21 @@ public class Simulator implements EventScheduler, EventHandler {
 	private Clock clock = new Clock();
 	private SimWorld world;
 	private LogGui logGui;
-
+	private int idofProcessor = -1;
+	private boolean isMaster = false;
 	private Vector<Event> evList; // time ordered list
 	private Animation animation;
 
 	public Simulator(SimWorld world) {
 		this.world = world;
 		evList = new Vector<Event>();
+	}
+
+	public Simulator(SimWorld world, boolean bMasterProcess,
+			int idofProcessor) {
+		this(world);
+		this.idofProcessor = idofProcessor;
+		this.isMaster = bMasterProcess;
 	}
 
 	@Override
@@ -194,5 +202,14 @@ public class Simulator implements EventScheduler, EventHandler {
 	public SimWorld getSimWorld() {
 		return world;
 	}
+
+	public int getIdofProcessor() {
+		return idofProcessor;
+	}
+
+	public boolean isMaster() {
+		return isMaster;
+	}
+
 
 }
