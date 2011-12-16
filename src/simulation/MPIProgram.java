@@ -16,20 +16,21 @@ public class MPIProgram {
 		int idofProcessor = MPI.COMM_WORLD.Rank();
 				System.out.println("rank (idofProcessor): "+idofProcessor);
 		System.out.println("Size "+MPI.COMM_WORLD.Size());
-		System.out.println("SizeTotal "+MPI.COMM_WORLD.SizeTotal());
+		int totalProcessors = MPI.COMM_WORLD.SizeTotal();
+		System.out.println("SizeTotal "+totalProcessors);
 		System.out.println("Get_processor_name "+MPI.Get_processor_name());
 		
-		JOptionPane.showInputDialog("sdfasdfd");
+	//	JOptionPane.showInputDialog("sdfasdfd");
 		
-		StartSimulation((idofProcessor == 0),idofProcessor);
+		StartSimulation((idofProcessor == 0),idofProcessor,totalProcessors);
 
 		
 		MPI.Finalize();
 		
 	}
 
-	private static void StartSimulation(boolean bMasterProcess, int idofProcessor) {
-		Simulator sim = new Simulator(SimWorld.getInstance(),bMasterProcess,idofProcessor);
+	private static void StartSimulation(boolean bMasterProcess, int idofProcessor, int totalProcessors) {
+		Simulator sim = new Simulator(SimWorld.getInstance(),bMasterProcess,idofProcessor,totalProcessors);
 		sim.initGui();
 		sim.initWorld(100);
 		sim.runSimulation();		

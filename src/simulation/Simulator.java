@@ -23,10 +23,11 @@ public class Simulator implements EventScheduler, EventHandler {
 	private Clock clock = new Clock();
 	private SimWorld world;
 	private LogGui logGui;
-	private int idofProcessor = -1;
+	private int idofProcessor = 0;
 	private boolean isMaster = false;
 	private Vector<Event> evList; // time ordered list
 	private Animation animation;
+	private int totalProcessors = 1;
 
 	public Simulator(SimWorld world) {
 		this.world = world;
@@ -34,12 +35,17 @@ public class Simulator implements EventScheduler, EventHandler {
 	}
 
 	public Simulator(SimWorld world, boolean bMasterProcess,
-			int idofProcessor) {
+			int idofProcessor, int totalProcessors) {
 		this(world);
 		this.idofProcessor = idofProcessor;
 		this.isMaster = bMasterProcess;
+		this.totalProcessors  = totalProcessors;
 	}
 
+	public int getIdOfProcessor(){
+		return idofProcessor;
+	}
+	
 	@Override
 	public void processEvent(Event e, EventScheduler s) {
 		// we handle only query events!
@@ -158,20 +164,30 @@ public class Simulator implements EventScheduler, EventHandler {
 			ap = world.getAirport(airportNames[rand
 					.nextInt(airportNames.length)]);
 			Aircraft ac = new Aircraft("X"+1000+i,ap);
-			world.addAircraft(ac);
+			
+			//add the aircraft only to the wolrd where its base airport is.
+			if(ap.getAirportId() % getTotalProcessors() == getIdOfProcessor()){
+				world.addAircraft(ac);
+				System.out.println("aircraft "+ac.getName()+" for processor "+getIdofProcessor()+ " located at "+ap.getName());
+			}
 		}
 		// create FlightPlans for all aircrafts
-		for (int i = 0; i < amountOfFlights; i++) {
+		//for (int i = 0; i < world.getAircrafts().size(); i++) {
 			// Random Airport:
-			Aircraft ac = world.getAircraft("X"+1000+i);	
+			//Aircraft ac = world.getAircraft("X"+1000+i);	
+			
+		for(String key : world.getAircrafts().keySet()){
+			Aircraft ac = world.getAircrafts().get(key);
+			
 			
 			// first Flight:
-			ap = world.getAirport(airportNames[rand.nextInt(3)]);
+			int amountOfAps = world.getAirports().size();
+			ap = world.getAirport(airportNames[rand.nextInt(amountOfAps)]);
 			while (ap == ac.getCurrentAirPort()) {
-				ap = world.getAirport(airportNames[rand.nextInt(3)]);
+				ap = world.getAirport(airportNames[rand.nextInt(amountOfAps)]);
 			}
 			int scheduleTime = rand.nextInt(10000);
-			logGui.println("SchedulTime for Flight i:" + i + " is "
+			logGui.println("SchedulTime for Aircraft: :" + key + " is "
 					+ scheduleTime);
 			Flight f = new Flight(scheduleTime, ap);
 			ac.getFlightPlan().addFlight(f);
@@ -180,15 +196,24 @@ public class Simulator implements EventScheduler, EventHandler {
 		}
 
 		// schedule initial events
-		for (int i = 0; i < amountOfFlights; i++) {
-			Aircraft ac = world.getAircraft("X"+1000+i);
+		//for (int i = 0; i < amountOfFlights; i++) {
+		
+		for(String key : world.getAircrafts().keySet()){
+			Aircraft ac = world.getAircrafts().get(key);
+			//Aircraft ac = world.getAircraft("X"+1000+i);
 			Flight f = ac.getFlightPlan().removeNextFlight();
+			if(f != null){
 			ac.setDestination(f.getDestination());
 			ap = ac.getCurrentAirPort();
 			Event e = new Event(Event.READY_FOR_DEPARTURE, ap, f.getTimeGap(),
 					ap, ac);
 			scheduleEvent(e);
+			}
 		}
+	}
+
+	private int getTotalProcessors() {
+		return this.totalProcessors;
 	}
 
 	public void initGui() {

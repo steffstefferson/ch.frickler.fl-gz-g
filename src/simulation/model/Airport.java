@@ -29,13 +29,16 @@ public class Airport implements EventHandler {
 	HashSet<Aircraft> aircrafts = new HashSet<Aircraft>(); 
 	LinkedList<Aircraft> waitingForTakeOffQueue = new LinkedList<Aircraft>();
 	LinkedList<Aircraft> waitingForLandingQueue = new LinkedList<Aircraft>();
-	
+
+	private static int airportCount = 0;
+	private int airportId = 0;
 	public Airport(String name, double x1, double y1, double x2, double y2){
 		this.name = name;
 		this.x1 = x1;
 		this.y1 = y1;
 		this.x2 = x2;
 		this.y2 = y2;
+		this.airportId = airportCount++;
 		runwayLength=Math.sqrt((x1-x2)*(x1-x2)+(y1-y2)*(y1-y2));
 	}
 	
@@ -45,6 +48,10 @@ public class Airport implements EventHandler {
 	 */
 	public void subscribeAircraft(Aircraft a){
 		aircrafts.add(a);
+	}
+	
+	public int getAirportId(){
+		return this.airportId;
 	}
 
 	/**
