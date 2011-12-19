@@ -52,9 +52,13 @@ public class Animation extends JFrame implements ActionListener {
 	}
 
 	public void paint(Graphics g) {
+		try{
 		super.paint(g); // this causes the flackering
 		printAirports(g);
 		printAircrafts(g);
+		}catch(Exception ex){
+			// catch the ConcurrentModificationException
+		}
 	}
 	
 	private void printAirports(Graphics g) {
@@ -79,11 +83,9 @@ public class Animation extends JFrame implements ActionListener {
 			
 			int xArea1 = getXonMap(a.getX1()+dim.getWidth());
 			int yArea1 = getYonMap(a.getY1()+dim.getHeight());
-					
-			System.out.println(xArea+" "+yArea+" "+xArea1+" "+yArea1);
-			g.drawRect(xArea,yArea1,xArea1-xArea,yArea-yArea1);
 			
-			//g.drawRect(100,100, 100,100);
+			g.drawRect(xArea,yArea1,xArea1-xArea,yArea-yArea1);
+
 		}
 
 	}
