@@ -40,9 +40,15 @@ public class Message implements Serializable {
 
 	public Aircraft getAircraft(SimWorld world) {
 		Aircraft aircraft = world.getAircraft(aircraftName);
+		final Airport destinationAp = world.getAirport(destination);
 		if (aircraft == null)
-			aircraft = new Aircraft(aircraftName, world.getAirport(destination));
+			aircraft = new Aircraft(aircraftName, destinationAp);
 		aircraft.setOrigin(world.getAirport(origin));
+		aircraft.setDestination(destinationAp);
+		aircraft.setCurrentAirPort(destinationAp);
+		aircraft.setState(Aircraft.ON_FLIGHT);
+		aircraft.calcPosition(timeStamp);
+		aircraft.setLastTime(timeStamp);
 		aircraft.setFlightPlan(getFlightPlan(world));
 		return aircraft;
 	}
