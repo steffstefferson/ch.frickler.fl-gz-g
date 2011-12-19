@@ -16,10 +16,14 @@ public class Event {
 	public static final int ADD_TO_ANIMATION = 9;
 	public static final int REMOVE_FROM_ANIMATION = 10;
 	public static final int REPAINT_ANIMATION = 11;
+	public static final int LEAVE_AIRSPACE = 12;
+	public static final int ENTER_AIRSPACE = 13;
 
 	public String[] typeStrings = { "READY_FOR_DEPARTURE", "START_TAKE_OFF",
 			"END_TAKE_OFF", "ARRIVAL", "START_LANDING", "END_LANDING",
-			"ENTER_START_QUEUE", "ENTER_LANDING_QUEUE", "PROCESS_QUEUES", "ADD_TO_ANIMATION", "REMOVE_FROM_ANIMATION", "REPAINT_ANIMATION" };
+			"ENTER_START_QUEUE", "ENTER_LANDING_QUEUE", "PROCESS_QUEUES",
+			"ADD_TO_ANIMATION", "REMOVE_FROM_ANIMATION", "REPAINT_ANIMATION",
+			"LEAVE_AIRSPACE", "ENTER_AIRSPACE" };
 
 	private long timeStamp;
 	private int type;
