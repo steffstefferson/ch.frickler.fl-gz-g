@@ -1,5 +1,9 @@
 package simulation.model;
 
+import java.awt.Color;
+import java.awt.Dimension;
+import java.awt.Point;
+import java.awt.Rectangle;
 import java.util.HashSet;
 import java.util.LinkedList;
 
@@ -22,6 +26,7 @@ public class Airport implements EventHandler {
 	private double y1; 
 	private double x2;    
 	private double y2;
+	private Dimension controlArea;
 	private double runwayLength;
 	private boolean runWayFree=true;	
 	private int waitingForTakeOff;
@@ -32,7 +37,7 @@ public class Airport implements EventHandler {
 
 	private static int airportCount = 0;
 	private int airportId = 0;
-	public Airport(String name, double x1, double y1, double x2, double y2){
+	public Airport(String name, double x1, double y1, double x2, double y2,int lRH,int lrW){
 		this.name = name;
 		this.x1 = x1;
 		this.y1 = y1;
@@ -40,6 +45,15 @@ public class Airport implements EventHandler {
 		this.y2 = y2;
 		this.airportId = airportCount++;
 		runwayLength=Math.sqrt((x1-x2)*(x1-x2)+(y1-y2)*(y1-y2));
+		int luftRaumHeight = lRH;
+		int luftRaumWidth = lrW;
+
+		controlArea = new Dimension(luftRaumWidth,luftRaumHeight);
+	}
+	
+	public Airport(String name, double x1, double y1, double x2, double y2){
+		this(name,x1,y1,x2,y2,40000,60000);
+		
 	}
 	
 	/**
@@ -245,6 +259,14 @@ public class Airport implements EventHandler {
 		return Math.sqrt((x1-destination.getX2())*(x1-destination.getX2())+(y1-destination.getY2())*(y1-destination.getY2()));
 	}
 
+	public Dimension getControlarea() {
+		return controlArea;
+	}
+
+	public Color getColor() {
+		Color[] colors = { Color.ORANGE,Color.BLUE,Color.CYAN,Color.GREEN,Color.PINK };
+		return colors [getAirportId()%colors.length];
+	}
 
 
 }

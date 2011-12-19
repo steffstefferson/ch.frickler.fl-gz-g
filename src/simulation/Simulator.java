@@ -28,6 +28,7 @@ public class Simulator implements EventScheduler, EventHandler {
 	private Vector<Event> evList; // time ordered list
 	private Animation animation;
 	private int totalProcessors = 1;
+	private String[] airportNames = { "ZURICH", "GENF", "BASEL", "BERNE" };
 
 	public Simulator(SimWorld world) {
 		this.world = world;
@@ -146,22 +147,12 @@ public class Simulator implements EventScheduler, EventHandler {
 		// Random Generator:
 		Random rand = new Random(1234);
 
-		// create airports
-		String[] airportNames = { "ZURICH", "GENF", "BASEL", "BERNE" };
-		Airport ap = new Airport("ZURICH", 684000, 256000, 683000, 259000);
-		world.addAirport(ap);
-		ap = new Airport("GENF", 497000, 120000, 499000, 122000);
-		world.addAirport(ap);
-		ap = new Airport("BASEL", 599000, 287000, 601000, 288000);
-		world.addAirport(ap);
-
-		ap = new Airport("BERNE", 550000, 207000, 552000, 208000);
-		world.addAirport(ap);
+		initAirports();
 
 		// create 100 aircrafts and choose an arbitrary airport
 		for (int i = 0; i < amountOfFlights; i++) {
 			// Random Airport:
-			ap = world.getAirport(airportNames[rand
+			Airport ap = world.getAirport(airportNames[rand
 					.nextInt(airportNames.length)]);
 			Aircraft ac = new Aircraft("X"+1000+i,ap);
 			
@@ -182,7 +173,7 @@ public class Simulator implements EventScheduler, EventHandler {
 			
 			// first Flight:
 			int amountOfAps = world.getAirports().size();
-			ap = world.getAirport(airportNames[rand.nextInt(amountOfAps)]);
+			Airport ap = world.getAirport(airportNames[rand.nextInt(amountOfAps)]);
 			while (ap == ac.getCurrentAirPort()) {
 				ap = world.getAirport(airportNames[rand.nextInt(amountOfAps)]);
 			}
@@ -204,12 +195,27 @@ public class Simulator implements EventScheduler, EventHandler {
 			Flight f = ac.getFlightPlan().removeNextFlight();
 			if(f != null){
 			ac.setDestination(f.getDestination());
-			ap = ac.getCurrentAirPort();
+			Airport ap = ac.getCurrentAirPort();
 			Event e = new Event(Event.READY_FOR_DEPARTURE, ap, f.getTimeGap(),
 					ap, ac);
 			scheduleEvent(e);
 			}
 		}
+	}
+
+	private void initAirports() {
+		// create airports
+		
+		Airport ap = new Airport("ZURICH", 684000, 256000, 683000, 259000,60000,45000);
+		world.addAirport(ap);
+		ap = new Airport("GENF", 497000, 120000, 499000, 122000,50000,100000);
+		world.addAirport(ap);
+		ap = new Airport("BASEL", 599000, 287000, 601000, 288000,40000,45000);
+		world.addAirport(ap);
+
+		ap = new Airport("BERNE", 550000, 207000, 552000, 208000,40000,100000);
+		world.addAirport(ap);
+		
 	}
 
 	private int getTotalProcessors() {
