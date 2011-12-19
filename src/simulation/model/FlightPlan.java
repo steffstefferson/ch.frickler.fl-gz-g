@@ -1,7 +1,9 @@
 package simulation.model;
 
 
+import java.util.Iterator;
 import java.util.LinkedList;
+import java.util.List;
 
 
 /**
@@ -22,6 +24,11 @@ public class FlightPlan {
 	
 	public void addFlight(Flight f){
 		flightPlan.addLast(f);		 
+	}
+	
+	public List<Flight> getFlights()
+	{
+		return flightPlan;
 	}
 
 	@Override
