@@ -46,7 +46,6 @@ public class Simulator implements EventScheduler, EventHandler {
 		return idofProcessor;
 	}
 	
-	@Override
 	public void processEvent(Event e, EventScheduler s) {
 		// we handle only query events!
 		if (e.getType() == Event.ADD_TO_ANIMATION) {

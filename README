@@ -1,3 +1,5 @@
 Flügzüge
-C
+
+
+P2pmpi ins Maven: mvn install:install-file -Dfile=p2pmpi.jar -DgroupId=org.p2pmpi -DartifactId=p2pmpi -Dversion=1.0 -Dpackaging=jar
 

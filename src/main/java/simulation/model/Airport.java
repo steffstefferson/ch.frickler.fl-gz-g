@@ -187,7 +187,6 @@ public class Airport implements EventHandler {
 				+ ", waitingForLanding=" + waitingForLanding;
 	}
 	
-	@Override
 	public void processEvent(Event e, EventScheduler sched) {
 
 		if (e.getType()==Event.READY_FOR_DEPARTURE){

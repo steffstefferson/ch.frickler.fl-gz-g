@@ -111,7 +111,6 @@ public class Aircraft implements EventHandler {
 		this.maxSpeed = maxSpeed;
 	}
 
-	@Override
 	public void processEvent(Event e, EventScheduler sched) {
 		Aircraft ac = e.getAirCraft();
 		Airport ap = e.getAirPort();

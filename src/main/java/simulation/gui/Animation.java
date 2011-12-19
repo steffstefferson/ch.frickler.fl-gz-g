@@ -123,7 +123,6 @@ public class Animation extends JFrame implements ActionListener {
 		aircraftList.remove(aircraft);
 	}
 
-	@Override
 	public void actionPerformed(ActionEvent e) {
 		this.repaint();
 	}

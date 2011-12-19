@@ -1,6 +1,4 @@
 package simulation;
-import javax.swing.JOptionPane;
-
 import p2pmpi.mpi.MPI;
 import simulation.model.SimWorld;
 
@@ -32,7 +30,7 @@ public class MPIProgram {
 	private static void StartSimulation(boolean bMasterProcess, int idofProcessor, int totalProcessors) {
 		Simulator sim = new Simulator(SimWorld.getInstance(),bMasterProcess,idofProcessor,totalProcessors);
 		sim.initGui();
-		sim.initWorld(100);
+		sim.initWorld(1000);
 		sim.runSimulation();		
 	}
 
