@@ -3,6 +3,8 @@ package simulation;
 import java.util.Random;
 import java.util.Vector;
 
+import simulation.communication.Communication;
+import simulation.communication.Message;
 import simulation.definition.EventHandler;
 import simulation.definition.EventScheduler;
 import simulation.gui.Animation;
@@ -29,6 +31,7 @@ public class Simulator implements EventScheduler, EventHandler {
 	private Animation animation;
 	private int totalProcessors = 1;
 	private String[] airportNames = { "ZURICH", "GENF", "BASEL", "BERNE" };
+	private Communication communication;
 
 	public Simulator(SimWorld world) {
 		this.world = world;
@@ -70,13 +73,15 @@ public class Simulator implements EventScheduler, EventHandler {
 			scheduleEvent(new Event(Event.ENTER_AIRSPACE, this,
 					e.getTimeStamp(), null, e.getAirCraft()));
 		} else if (e.getType() == Event.ENTER_AIRSPACE) {
-			scheduleEvent( new Event(Event.ADD_TO_ANIMATION, this, e.getTimeStamp(),
-					null, e.getAirCraft()));
+			scheduleEvent(new Event(Event.ADD_TO_ANIMATION, this,
+					e.getTimeStamp(), null, e.getAirCraft()));
 			Aircraft ac = e.getAirCraft();
 			Airport origin = ac.getOrigin();
 			Airport dest = ac.getDestination();
-			long duration = (long) (origin.getDistanceTo(dest) / ac.getMaxSpeed());
-			scheduleEvent(new Event(Event.ARRIVAL, dest, e.getTimeStamp() + duration/2, dest, ac));
+			long duration = (long) (origin.getDistanceTo(dest) / ac
+					.getMaxSpeed());
+			scheduleEvent(new Event(Event.ARRIVAL, dest, e.getTimeStamp()
+					+ duration / 2, dest, ac));
 		} else
 			throw new RuntimeException("Scheduler can handle only QUERY events");
 
@@ -88,6 +93,11 @@ public class Simulator implements EventScheduler, EventHandler {
 	 * @see EventScheduler#scheduleEvent(Event)
 	 */
 	public void scheduleEvent(Event e) {
+
+		if (e.getType() == Event.ENTER_AIRSPACE) {
+			communication.send(e, e.getAirCraft());
+			return;
+		}
 
 		long timeEvent = e.getTimeStamp();
 
@@ -127,9 +137,15 @@ public class Simulator implements EventScheduler, EventHandler {
 	 * processes the event
 	 */
 	public void processNextEvent() {
-
-		final Event e = evList.remove(0); // TODO only remove if we are sure we
-											// are allowed to process
+		final Event e;
+		final Message message = communication.receive();
+		if (message != null) {
+			e = message.getEvent(world, this);
+		} else {
+			e = evList.remove(0); // TODO only remove if we are sure
+									// we
+									// are allowed to process
+		}
 		logGui.println("Process next event:" + e);
 		if (e.getTimeStamp() > clock.currentSimulationTime()) {
 			clock.sleepUntil(e.getTimeStamp());
@@ -257,6 +273,10 @@ public class Simulator implements EventScheduler, EventHandler {
 
 	public boolean isMaster() {
 		return isMaster;
+	}
+
+	public void setCommunication(Communication communication) {
+		this.communication = communication;
 	}
 
 }
