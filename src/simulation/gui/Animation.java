@@ -74,17 +74,18 @@ public class Animation extends JFrame implements ActionListener {
 
 			int[] x = new int[] { flughafenX, getXonMap(a.getX2()) };
 			int[] y = new int[] { flughafenY, getYonMap(a.getY2()) };
-			g.setColor(a.getColor());
 			g.drawPolygon(x, y, x.length);
-			
+			g.setColor(a.getColor());
+			/* don't show the airspace area
 			Dimension dim = a.getControlarea();
 			int xArea = getXonMap(a.getX1()-dim.getWidth());
 			int yArea = getYonMap(a.getY1()-dim.getHeight());
 			
 			int xArea1 = getXonMap(a.getX1()+dim.getWidth());
 			int yArea1 = getYonMap(a.getY1()+dim.getHeight());
-			
+			// airspace
 			g.drawRect(xArea,yArea1,xArea1-xArea,yArea-yArea1);
+			*/
 
 		}
 
