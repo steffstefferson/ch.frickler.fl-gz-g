@@ -1,17 +1,26 @@
-package simulation.model;
+package simulation.communication;
 
 import java.io.Serializable;
 import java.util.List;
+
+import simulation.definition.EventHandler;
+import simulation.model.Aircraft;
+import simulation.model.Airport;
+import simulation.model.Event;
+import simulation.model.Flight;
+import simulation.model.FlightPlan;
+import simulation.model.SimWorld;
 
 public class Message implements Serializable {
 
 	/**
 	 * version id for Serialization; increment this when changing the class
 	 */
-	private static final long serialVersionUID = 1L;
+	private static final long serialVersionUID = 2L;
 
 	private int eventType;
 	private long timeStamp;
+	private long takeOffTime;
 	private String aircraftName;
 	private String origin;
 	private String destination;
@@ -21,6 +30,7 @@ public class Message implements Serializable {
 	public Message(Event event, Aircraft aircraft) {
 		eventType = event.getType();
 		timeStamp = event.getTimeStamp();
+		takeOffTime = aircraft.getLastTime();
 		aircraftName = aircraft.getName();
 		origin = aircraft.getOrigin().getName();
 		destination = aircraft.getDestination().getName();
@@ -33,12 +43,12 @@ public class Message implements Serializable {
 		}
 	}
 
-	public Event getEvent(SimWorld world) {
+	public Event getEvent(SimWorld world, EventHandler eh) {
 		Airport ap = world.getAirport(destination);
-		return new Event(eventType, ap, timeStamp, ap, getAircraft(world));
+		return new Event(eventType, eh , timeStamp, ap, getAircraft(world));
 	}
 
-	public Aircraft getAircraft(SimWorld world) {
+	private Aircraft getAircraft(SimWorld world) {
 		Aircraft aircraft = world.getAircraft(aircraftName);
 		final Airport destinationAp = world.getAirport(destination);
 		if (aircraft == null)
@@ -47,8 +57,8 @@ public class Message implements Serializable {
 		aircraft.setDestination(destinationAp);
 		aircraft.setCurrentAirPort(destinationAp);
 		aircraft.setState(Aircraft.ON_FLIGHT);
+		aircraft.setLastTime(takeOffTime);
 		aircraft.calcPosition(timeStamp);
-		aircraft.setLastTime(timeStamp);
 		aircraft.setFlightPlan(getFlightPlan(world));
 		return aircraft;
 	}
