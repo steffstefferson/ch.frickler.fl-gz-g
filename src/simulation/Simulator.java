@@ -35,18 +35,18 @@ public class Simulator implements EventScheduler, EventHandler {
 		evList = new Vector<Event>();
 	}
 
-	public Simulator(SimWorld world, boolean bMasterProcess,
-			int idofProcessor, int totalProcessors) {
+	public Simulator(SimWorld world, boolean bMasterProcess, int idofProcessor,
+			int totalProcessors) {
 		this(world);
 		this.idofProcessor = idofProcessor;
 		this.isMaster = bMasterProcess;
-		this.totalProcessors  = totalProcessors;
+		this.totalProcessors = totalProcessors;
 	}
 
-	public int getIdOfProcessor(){
+	public int getIdOfProcessor() {
 		return idofProcessor;
 	}
-	
+
 	@Override
 	public void processEvent(Event e, EventScheduler s) {
 		// we handle only query events!
@@ -63,6 +63,20 @@ public class Simulator implements EventScheduler, EventHandler {
 						e.getTimeStamp() + Clock.REPAINT_GAP, null, null);
 				scheduleEvent(eNew);
 			}
+
+		} else if (e.getType() == Event.LEAVE_AIRSPACE) {
+			scheduleEvent(new Event(Event.REMOVE_FROM_ANIMATION, this,
+					e.getTimeStamp(), null, e.getAirCraft()));
+			scheduleEvent(new Event(Event.ENTER_AIRSPACE, this,
+					e.getTimeStamp(), null, e.getAirCraft()));
+		} else if (e.getType() == Event.ENTER_AIRSPACE) {
+			scheduleEvent( new Event(Event.ADD_TO_ANIMATION, this, e.getTimeStamp(),
+					null, e.getAirCraft()));
+			Aircraft ac = e.getAirCraft();
+			Airport origin = ac.getOrigin();
+			Airport dest = ac.getDestination();
+			long duration = (long) (origin.getDistanceTo(dest) / ac.getMaxSpeed());
+			scheduleEvent(new Event(Event.ARRIVAL, dest, e.getTimeStamp() + duration/2, dest, ac));
 		} else
 			throw new RuntimeException("Scheduler can handle only QUERY events");
 
@@ -154,26 +168,28 @@ public class Simulator implements EventScheduler, EventHandler {
 			// Random Airport:
 			Airport ap = world.getAirport(airportNames[rand
 					.nextInt(airportNames.length)]);
-			Aircraft ac = new Aircraft("X"+1000+i,ap);
-			
-			//add the aircraft only to the wolrd where its base airport is.
-			if(ap.getAirportId() % getTotalProcessors() == getIdOfProcessor()){
+			Aircraft ac = new Aircraft("X" + 1000 + i, ap);
+
+			// add the aircraft only to the wolrd where its base airport is.
+			if (ap.getAirportId() % getTotalProcessors() == getIdOfProcessor()) {
 				world.addAircraft(ac);
-				System.out.println("aircraft "+ac.getName()+" for processor "+getIdofProcessor()+ " located at "+ap.getName());
+				System.out.println("aircraft " + ac.getName()
+						+ " for processor " + getIdofProcessor()
+						+ " located at " + ap.getName());
 			}
 		}
 		// create FlightPlans for all aircrafts
-		//for (int i = 0; i < world.getAircrafts().size(); i++) {
-			// Random Airport:
-			//Aircraft ac = world.getAircraft("X"+1000+i);	
-			
-		for(String key : world.getAircrafts().keySet()){
+		// for (int i = 0; i < world.getAircrafts().size(); i++) {
+		// Random Airport:
+		// Aircraft ac = world.getAircraft("X"+1000+i);
+
+		for (String key : world.getAircrafts().keySet()) {
 			Aircraft ac = world.getAircrafts().get(key);
-			
-			
+
 			// first Flight:
 			int amountOfAps = world.getAirports().size();
-			Airport ap = world.getAirport(airportNames[rand.nextInt(amountOfAps)]);
+			Airport ap = world.getAirport(airportNames[rand
+					.nextInt(amountOfAps)]);
 			while (ap == ac.getCurrentAirPort()) {
 				ap = world.getAirport(airportNames[rand.nextInt(amountOfAps)]);
 			}
@@ -187,35 +203,36 @@ public class Simulator implements EventScheduler, EventHandler {
 		}
 
 		// schedule initial events
-		//for (int i = 0; i < amountOfFlights; i++) {
-		
-		for(String key : world.getAircrafts().keySet()){
+		// for (int i = 0; i < amountOfFlights; i++) {
+
+		for (String key : world.getAircrafts().keySet()) {
 			Aircraft ac = world.getAircrafts().get(key);
-			//Aircraft ac = world.getAircraft("X"+1000+i);
+			// Aircraft ac = world.getAircraft("X"+1000+i);
 			Flight f = ac.getFlightPlan().removeNextFlight();
-			if(f != null){
-			ac.setDestination(f.getDestination());
-			Airport ap = ac.getCurrentAirPort();
-			Event e = new Event(Event.READY_FOR_DEPARTURE, ap, f.getTimeGap(),
-					ap, ac);
-			scheduleEvent(e);
+			if (f != null) {
+				ac.setDestination(f.getDestination());
+				Airport ap = ac.getCurrentAirPort();
+				Event e = new Event(Event.READY_FOR_DEPARTURE, ap,
+						f.getTimeGap(), ap, ac);
+				scheduleEvent(e);
 			}
 		}
 	}
 
 	private void initAirports() {
 		// create airports
-		
-		Airport ap = new Airport("ZURICH", 684000, 256000, 683000, 259000,60000,45000);
+
+		Airport ap = new Airport("ZURICH", 684000, 256000, 683000, 259000,
+				60000, 45000);
 		world.addAirport(ap);
-		ap = new Airport("GENF", 497000, 120000, 499000, 122000,50000,100000);
+		ap = new Airport("GENF", 497000, 120000, 499000, 122000, 50000, 100000);
 		world.addAirport(ap);
-		ap = new Airport("BASEL", 599000, 287000, 601000, 288000,40000,45000);
+		ap = new Airport("BASEL", 599000, 287000, 601000, 288000, 40000, 45000);
 		world.addAirport(ap);
 
-		ap = new Airport("BERNE", 550000, 207000, 552000, 208000,40000,100000);
+		ap = new Airport("BERNE", 550000, 207000, 552000, 208000, 40000, 100000);
 		world.addAirport(ap);
-		
+
 	}
 
 	private int getTotalProcessors() {
@@ -241,6 +258,5 @@ public class Simulator implements EventScheduler, EventHandler {
 	public boolean isMaster() {
 		return isMaster;
 	}
-
 
 }

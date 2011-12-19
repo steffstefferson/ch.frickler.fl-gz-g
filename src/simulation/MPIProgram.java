@@ -1,6 +1,4 @@
 package simulation;
-import javax.swing.JOptionPane;
-
 import p2pmpi.mpi.MPI;
 import simulation.model.SimWorld;
 

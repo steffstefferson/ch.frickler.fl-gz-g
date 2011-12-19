@@ -144,9 +144,9 @@ public class Aircraft implements EventHandler {
 			ap.setRunWayFree(true);
 			ap.unscribeAircraft(ac);
 			long duration = (long) (ap.getDistanceTo(ac.destination) / ac.maxSpeed);
-			Event e1 = new Event(Event.ARRIVAL, ac.getDestination(),
-					e.getTimeStamp() + duration, ac.getDestination(), ac); // to
-																			// do!
+
+			Event e1 = new Event(Event.LEAVE_AIRSPACE, (EventHandler) sched // HACK!
+					, e.getTimeStamp() + duration / 2, ac.getOrigin(), ac); 
 			sched.scheduleEvent(e1);
 			Event e2 = new Event(Event.PROCESS_QUEUES, ap, e.getTimeStamp(),
 					ap, null);
