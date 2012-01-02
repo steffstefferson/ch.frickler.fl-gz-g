@@ -1,3 +1,5 @@
 Flügzüge
-C
 
+To run the project with ANT:
+1) edit build.xml, set value for property "base.path" to the absolute path to project root
+2) execute target "runMPI" (in Eclipse, right click build.xml -> Run as Ant Build
