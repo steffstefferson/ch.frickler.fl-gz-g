@@ -2,21 +2,20 @@
 <project default="runMPI" name="Build and run AirCraftSimulation">
     <!--this file was created by Eclipse Runnable JAR Export Wizard-->
     <!--ANT 1.7 is required                                        -->
-	<property name="base.path" value="/home/lukas/git/ch.frickler.fl-gz-g"/>
 	<target name="create_xferfiles_manifest">
-	<copy file="xferfiles.template" tofile="xferfiles">
-		<filterset><filter token="basepath" value="${base.path}"/></filterset>
+	<copy file="xferfiles.template" tofile="xferfiles" overwrite="true">
+		<filterset><filter token="basepath" value="${basedir}"/></filterset>
 	</copy>
 	</target>
     <target name="create_run_jar">
-        <jar destfile="${base.path}/flgzg.jar" filesetmanifest="mergewithoutmain">
+        <jar destfile="${basedir}/flgzg.jar" filesetmanifest="mergewithoutmain">
             <manifest>
                 <attribute name="Main-Class" value="simulation.MPIProgram"/>
                 <attribute name="Class-Path" value="."/>
             </manifest>
-            <fileset dir="${base.path}/bin"/>
-            <zipfileset excludes="META-INF/*.SF" src="${base.path}/lib/p2pmpi.jar"/>
-            <zipfileset excludes="META-INF/*.SF" src="${base.path}/lib/log4j.jar"/>
+            <fileset dir="${basedir}/bin"/>
+            <zipfileset excludes="META-INF/*.SF" src="${basedir}/lib/p2pmpi.jar"/>
+            <zipfileset excludes="META-INF/*.SF" src="${basedir}/lib/log4j.jar"/>
         </jar>
     </target>
 	<target name="runMPI" depends="create_run_jar, create_xferfiles_manifest">
