@@ -33,9 +33,12 @@ public class Simulator implements EventScheduler, EventHandler {
 	private String[] airportNames = { "ZURICH", "GENF", "BASEL", "BERNE" };
 	private Communication communication;
 
+	private Vector<Event> processedEvents;
+
 	public Simulator(SimWorld world) {
 		this.world = world;
 		evList = new Vector<Event>();
+		processedEvents = new Vector<Event>();
 	}
 
 	public Simulator(SimWorld world, boolean bMasterProcess, int idofProcessor,
@@ -101,12 +104,12 @@ public class Simulator implements EventScheduler, EventHandler {
 
 		long timeEvent = e.getTimeStamp();
 
-		if (clock.isInPast(timeEvent)) {
-			throw new RuntimeException("Causality error: " + e + "tim: "
-					+ timeEvent + " currentSimulationTime"
-					+ clock.currentSimulationTime());
-
-		}
+		// if (clock.isInPast(timeEvent)) {
+		// throw new RuntimeException("Causality error: " + e + "tim: "
+		// + timeEvent + " currentSimulationTime"
+		// + clock.currentSimulationTime());
+		// // TODO rollback
+		// }
 		insertEvent(e);
 
 		// If list is empty, start painting (again)
@@ -121,6 +124,7 @@ public class Simulator implements EventScheduler, EventHandler {
 	}
 
 	private void insertEvent(Event e) {
+
 		int pos = 0;
 		while (pos < evList.size()) {
 			Event n = evList.get(pos);
@@ -132,6 +136,47 @@ public class Simulator implements EventScheduler, EventHandler {
 		evList.add(pos, e);
 	}
 
+	private Event removeEvent(Event e) {
+		int pos = 0;
+		while (pos < evList.size()) {
+			Event n = evList.get(pos);
+			if (e.equals(n))
+				break;
+			pos++;
+		}
+
+		return evList.remove(pos);
+	}
+
+	private void handleAntiMessage(Event msgEvent) {
+		if (!clock.isInPast(msgEvent.getTimeStamp())) { // has not yet been
+														// proccssed
+
+			if (removeEvent(msgEvent) == null) { // If Message has been
+													// recieved, remove event
+				// Event has not yet been recived
+				insertEvent(msgEvent);
+			}
+
+		} else { // Message has been processed
+			doRollback(msgEvent);
+		}
+	}
+
+	private void doRollback(Event msgEvent) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	private void addMPIEvent(Event msgEvent) {
+		if (!evList.contains(msgEvent)) { // There is no Anti-Message in
+											// the queue
+			insertEvent(msgEvent); // Insert event into queue
+		} else {
+			removeEvent(msgEvent); // Remove anti-Message
+		}
+	}
+
 	/**
 	 * Advances the time to the time of the oldest event in the event queue and
 	 * processes the event
@@ -140,12 +185,23 @@ public class Simulator implements EventScheduler, EventHandler {
 		final Event e;
 		final Message message = communication.receive();
 		if (message != null) {
-			e = message.getEvent(world, this);
-		} else {
-			e = evList.remove(0); // TODO only remove if we are sure
-									// we
-									// are allowed to process
+			Event msgEvent = message.getEvent(world, this);
+
+			// Page 30
+			if (msgEvent.isAntiMessage()) {
+				handleAntiMessage(msgEvent);
+			}
+
+			if (clock.isInPast(msgEvent.getTimeStamp())) {
+				doRollback(msgEvent);
+			} else {
+				addMPIEvent(msgEvent);
+			}
 		}
+
+		e = evList.remove(0); // TODO only remove if we are sure we are allowed
+								// to process
+
 		logGui.println("Process next event:" + e);
 		if (e.getTimeStamp() > clock.currentSimulationTime()) {
 			clock.sleepUntil(e.getTimeStamp());
@@ -153,6 +209,9 @@ public class Simulator implements EventScheduler, EventHandler {
 
 		EventHandler eh = e.getEventHandler();
 		eh.processEvent(e, this);
+
+		// Add to history
+		processedEvents.add(e);
 
 	}
 
