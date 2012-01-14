@@ -18,13 +18,6 @@ public class MPICommunication implements Communication {
 		// 0, 1, MPI.OBJECT,
 		// dest, 1);
 
-		/*
-		 * ohni ids e ahnig vor theorie ds ha, folgendes chönnt doch ga, oder? 
-		 * - n=MPI.COMM_WORLD.SizeTotal() 
-		 * - jede prozess schickt sini messages witer zu (myrank+1) % n 
-		 * - jede prozess received sini messages vo (myrank-1) % n 
-		 * - vorgehe nachem receive: we d message am richtige ort isch, verarbeite. schüsch witerleite zum nächschte prozess.
-		 */
 		if (MPI.COMM_WORLD.Rank() == 0)
 			MPI.COMM_WORLD.Ssend(new int[] { event.getType() }, 0, 1, MPI.INT, dest, 1);
 	}
