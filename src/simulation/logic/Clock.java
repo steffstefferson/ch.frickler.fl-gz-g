@@ -6,7 +6,7 @@ public class Clock {
 
 	public static final long REPAINT_GAP = 80;
 
-	private static final int SCALE_FACTOR = 1000;
+	private static final int SCALE_FACTOR = 300;
 
 	public long currentSimulationTime() {
 		return currentSimulationTime;
