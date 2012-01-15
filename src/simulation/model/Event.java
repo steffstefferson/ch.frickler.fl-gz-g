@@ -30,6 +30,7 @@ public class Event {
 	private EventHandler eventHandler;
 	private Airport airPort;
 	private Aircraft airCraft;
+	private boolean isAntiMessage;
 
 	public Airport getAirPort() {
 		return airPort;
@@ -69,6 +70,14 @@ public class Event {
 
 	public void setTimeStamp(long timeStamp) {
 		this.timeStamp = timeStamp;
+	}
+
+	public boolean isAntiMessage() {
+		return isAntiMessage;
+	}
+
+	public void setAntiMessage(boolean isAntiMessage) {
+		this.isAntiMessage = isAntiMessage;
 	}
 
 	public void testType() {
@@ -118,4 +127,44 @@ public class Event {
 
 		return s;
 	}
+
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = 1;
+		result = prime * result
+				+ ((airCraft == null) ? 0 : airCraft.hashCode());
+		result = prime * result + ((airPort == null) ? 0 : airPort.hashCode());
+		result = prime * result + (int) (timeStamp ^ (timeStamp >>> 32));
+		result = prime * result + type;
+		return result;
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (obj == null)
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		Event other = (Event) obj;
+		if (airCraft == null) {
+			if (other.airCraft != null)
+				return false;
+		} else if (!airCraft.equals(other.airCraft))
+			return false;
+		if (airPort == null) {
+			if (other.airPort != null)
+				return false;
+		} else if (!airPort.equals(other.airPort))
+			return false;
+		if (timeStamp != other.timeStamp)
+			return false;
+		if (type != other.type)
+			return false;
+		return true;
+	}
+	
+	
 }
