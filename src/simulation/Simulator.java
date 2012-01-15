@@ -89,7 +89,19 @@ public class Simulator implements EventScheduler, EventHandler {
 			throw new RuntimeException("Scheduler can handle only QUERY events");
 
 	}
-
+	/*
+	 *  get the next lower bound of future sending event
+	 */
+	
+	private long getLowerFutureTimeStampBoundary() {
+		for (Event ev : evList) {
+			if (ev.getType() == Event.ENTER_AIRSPACE) {
+				return ev.getTimeStamp();
+			}
+		}
+		return -1;
+	}
+	
 	/*
 	 * New events which lay in the past cause a causality error
 	 * 
