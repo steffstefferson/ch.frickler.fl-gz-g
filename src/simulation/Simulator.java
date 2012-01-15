@@ -37,7 +37,6 @@ public class Simulator implements EventScheduler, EventHandler {
 	private String[] airportNames = { "ZURICH", "GENF", "BASEL", "BERNE" };
 	private Communication communication;
 	private Map<Integer, TransactionalEventHandler> eventHandlers = new HashMap<Integer, TransactionalEventHandler>();
-
 	private Vector<Event> processedEvents;
 
 	public Simulator(SimWorld world) {
@@ -47,8 +46,7 @@ public class Simulator implements EventScheduler, EventHandler {
 		eventHandlers.put(Event.READY_FOR_DEPARTURE, new ReadyForDepartureHandler());
 	}
 
-	public Simulator(SimWorld world, boolean bMasterProcess, int idofProcessor,
-			int totalProcessors) {
+	public Simulator(SimWorld world, boolean bMasterProcess, int idofProcessor, int totalProcessors) {
 		this(world);
 		this.idofProcessor = idofProcessor;
 		this.isMaster = bMasterProcess;
@@ -71,29 +69,36 @@ public class Simulator implements EventScheduler, EventHandler {
 			animation.repaint();
 
 			if (evList.size() > 0) {
-				Event eNew = new Event(Event.REPAINT_ANIMATION, this,
-						e.getTimeStamp() + Clock.REPAINT_GAP, null, null);
+				Event eNew = new Event(Event.REPAINT_ANIMATION, this, e.getTimeStamp() + Clock.REPAINT_GAP, null, null);
 				scheduleEvent(eNew);
 			}
 
 		} else if (e.getType() == Event.LEAVE_AIRSPACE) {
-			scheduleEvent(new Event(Event.REMOVE_FROM_ANIMATION, this,
-					e.getTimeStamp(), null, e.getAirCraft()));
-			scheduleEvent(new Event(Event.ENTER_AIRSPACE, this,
-					e.getTimeStamp(), null, e.getAirCraft()));
+			scheduleEvent(new Event(Event.REMOVE_FROM_ANIMATION, this, e.getTimeStamp(), null, e.getAirCraft()));
+			scheduleEvent(new Event(Event.ENTER_AIRSPACE, this, e.getTimeStamp(), null, e.getAirCraft()));
 		} else if (e.getType() == Event.ENTER_AIRSPACE) {
-			scheduleEvent(new Event(Event.ADD_TO_ANIMATION, this,
-					e.getTimeStamp(), null, e.getAirCraft()));
+			scheduleEvent(new Event(Event.ADD_TO_ANIMATION, this, e.getTimeStamp(), null, e.getAirCraft()));
 			Aircraft ac = e.getAirCraft();
 			Airport origin = ac.getOrigin();
 			Airport dest = ac.getDestination();
-			long duration = (long) (origin.getDistanceTo(dest) / ac
-					.getMaxSpeed());
-			scheduleEvent(new Event(Event.ARRIVAL, dest, e.getTimeStamp()
-					+ duration / 2, dest, ac));
+			long duration = (long) (origin.getDistanceTo(dest) / ac.getMaxSpeed());
+			scheduleEvent(new Event(Event.ARRIVAL, dest, e.getTimeStamp() + duration / 2, dest, ac));
 		} else
 			throw new RuntimeException("Scheduler can handle only QUERY events");
 
+	}
+
+	/*
+	 * get the next lower bound of future sending event
+	 */
+
+	private long getLowerFutureTimeStampBoundary() {
+		for (Event ev : evList) {
+			if (ev.getType() == Event.ENTER_AIRSPACE) {
+				return ev.getTimeStamp();
+			}
+		}
+		return -1;
 	}
 
 	/*
@@ -114,14 +119,13 @@ public class Simulator implements EventScheduler, EventHandler {
 		// throw new RuntimeException("Causality error: " + e + "tim: "
 		// + timeEvent + " currentSimulationTime"
 		// + clock.currentSimulationTime());
-		// // TODO rollback
+		//
 		// }
 		insertEvent(e);
 
 		// If list is empty, start painting (again)
 		if (evList.size() <= 1) {
-			Event eNew = new Event(Event.REPAINT_ANIMATION, this,
-					e.getTimeStamp() + Clock.REPAINT_GAP, null, null);
+			Event eNew = new Event(Event.REPAINT_ANIMATION, this, e.getTimeStamp() + Clock.REPAINT_GAP, null, null);
 			scheduleEvent(eNew);
 
 			logGui.println("Start paint animation" + e.toString());
@@ -173,8 +177,7 @@ public class Simulator implements EventScheduler, EventHandler {
 	private void doRollback(Event msgEvent) {
 
 		eventHandlers.get(msgEvent.getType()).rollback(msgEvent, this);
-		
-		
+
 	}
 
 	private void addMPIEvent(Event msgEvent) {
@@ -203,27 +206,26 @@ public class Simulator implements EventScheduler, EventHandler {
 
 			if (clock.isInPast(msgEvent.getTimeStamp())) {
 				doRollback(msgEvent);
-				
+
 			} else {
 				addMPIEvent(msgEvent);
 			}
+			e = message.getEvent(world, this);
+		} else {
+			e = evList.remove(0); // TODO only remove if we are sure
+									// we
+									// are allowed to process
 		}
-
-		e = evList.remove(0); // TODO only remove if we are sure we are allowed
-								// to process
-
 		logGui.println("Process next event:" + e);
 		if (e.getTimeStamp() > clock.currentSimulationTime()) {
 			clock.sleepUntil(e.getTimeStamp());
 		}
 
-//		EventHandler eh = e.getEventHandler();
-//		eh.processEvent(e, this);
+		// EventHandler eh = e.getEventHandler();
+		// eh.processEvent(e, this);
 		eventHandlers.get(e.getType()).process(e, this);
-
 		// Add to history
 		processedEvents.add(e);
-
 	}
 
 	/**
@@ -252,16 +254,14 @@ public class Simulator implements EventScheduler, EventHandler {
 		// create 100 aircrafts and choose an arbitrary airport
 		for (int i = 0; i < amountOfFlights; i++) {
 			// Random Airport:
-			Airport ap = world.getAirport(airportNames[rand
-					.nextInt(airportNames.length)]);
+			Airport ap = world.getAirport(airportNames[rand.nextInt(airportNames.length)]);
 			Aircraft ac = new Aircraft("X" + 1000 + i, ap);
 
 			// add the aircraft only to the wolrd where its base airport is.
 			if (ap.getAirportId() % getTotalProcessors() == getIdOfProcessor()) {
 				world.addAircraft(ac);
-				System.out.println("aircraft " + ac.getName()
-						+ " for processor " + getIdofProcessor()
-						+ " located at " + ap.getName());
+				System.out.println("aircraft " + ac.getName() + " for processor " + getIdofProcessor() + " located at "
+						+ ap.getName());
 			}
 		}
 		// create FlightPlans for all aircrafts
@@ -274,14 +274,12 @@ public class Simulator implements EventScheduler, EventHandler {
 
 			// first Flight:
 			int amountOfAps = world.getAirports().size();
-			Airport ap = world.getAirport(airportNames[rand
-					.nextInt(amountOfAps)]);
+			Airport ap = world.getAirport(airportNames[rand.nextInt(amountOfAps)]);
 			while (ap == ac.getCurrentAirPort()) {
 				ap = world.getAirport(airportNames[rand.nextInt(amountOfAps)]);
 			}
 			int scheduleTime = rand.nextInt(10000);
-			logGui.println("SchedulTime for Aircraft: :" + key + " is "
-					+ scheduleTime);
+			logGui.println("SchedulTime for Aircraft: :" + key + " is " + scheduleTime);
 			Flight f = new Flight(scheduleTime, ap);
 			ac.getFlightPlan().addFlight(f);
 			// Return flight
@@ -298,8 +296,7 @@ public class Simulator implements EventScheduler, EventHandler {
 			if (f != null) {
 				ac.setDestination(f.getDestination());
 				Airport ap = ac.getCurrentAirPort();
-				Event e = new Event(Event.READY_FOR_DEPARTURE, ap,
-						f.getTimeGap(), ap, ac);
+				Event e = new Event(Event.READY_FOR_DEPARTURE, ap, f.getTimeGap(), ap, ac);
 				scheduleEvent(e);
 			}
 		}
@@ -308,8 +305,7 @@ public class Simulator implements EventScheduler, EventHandler {
 	private void initAirports() {
 		// create airports
 
-		Airport ap = new Airport("ZURICH", 684000, 256000, 683000, 259000,
-				60000, 45000);
+		Airport ap = new Airport("ZURICH", 684000, 256000, 683000, 259000, 60000, 45000);
 		world.addAirport(ap);
 		ap = new Airport("GENF", 497000, 120000, 499000, 122000, 50000, 100000);
 		world.addAirport(ap);

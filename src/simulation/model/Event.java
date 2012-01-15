@@ -1,7 +1,6 @@
 package simulation.model;
 
 import simulation.definition.EventHandler;
-import simulation.gui.Animation;
 
 public class Event {
 	// Event - Types
