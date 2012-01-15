@@ -7,8 +7,8 @@ import simulation.model.Event;
 
 public class MPICommunication implements Communication {
 
-	Request[] requests = new Request[MPI.COMM_WORLD.SizeTotal()];
-	Message[] messages = new Message[MPI.COMM_WORLD.SizeTotal()];
+	Request request;
+	Message[] messages = new Message[1];
 
 	@Override
 	public void send(Event event, Aircraft aircraft) {
@@ -22,24 +22,19 @@ public class MPICommunication implements Communication {
 
 	@Override
 	public Message receive() {
-		for (int i = 0; i < MPI.COMM_WORLD.SizeTotal(); i++) {
-			if (i == MPI.COMM_WORLD.Rank())
-				continue;
-			if (requests[i] == null)
-				requests[i] = MPI.COMM_WORLD.Irecv(messages, i, 1, MPI.OBJECT, i, 1);
+			if (request == null)
+				request = MPI.COMM_WORLD.Irecv(messages, 0, 1, MPI.OBJECT, MPI.ANY_SOURCE, 1);
 
-			if (requests[i].Test() != null) {
+			if (request.Test() != null) {
 				System.out.println("Receiving...");
-				requests[i].Wait();
-				requests[i] = null;
+				request = null;
 			}
-			if (messages[i] != null) {
-				System.out.println("Received message is " + messages[i]);
-				Message retMessage = messages[i];
-				messages[i] = null;
+			if (messages[0] != null) {
+				System.out.println("Received message is " + messages[0]);
+				Message retMessage = messages[0];
+				messages[0] = null;
 				return retMessage;
 			}
-		}
 		return null;
 	}
 
