@@ -28,7 +28,7 @@ public class StartTakeOffHandler implements TransactionalEventHandler {
 			throw new RuntimeException("runway too short!!");
 		}
 		// schedule next event
-		Event eNew = new Event(Event.END_TAKE_OFF, ac, e.getTimeStamp()
+		Event eNew = new Event(Event.END_TAKE_OFF, e.getTimeStamp()
 				+ takeOffDuration, ap, ac); // to do!
 		scheduler.scheduleEvent(eNew);
 	}

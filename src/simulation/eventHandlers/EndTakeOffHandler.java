@@ -24,11 +24,11 @@ public class EndTakeOffHandler implements TransactionalEventHandler {
 		// Event e1 = new Event(Event.LEAVE_AIRSPACE, (EventHandler) sched //
 		// HACK!
 		// , e.getTimeStamp() + duration / 2, ac.getOrigin(), ac);
-		Event e1 = new Event(Event.LEAVE_AIRSPACE, null, e.getTimeStamp() + duration / 2, ac.getOrigin(), ac);
+		Event e1 = new Event(Event.LEAVE_AIRSPACE, e.getTimeStamp() + duration / 2, ac.getOrigin(), ac);
 		scheduler.scheduleEvent(e1);
-		Event e2 = new Event(Event.PROCESS_QUEUES, ap, e.getTimeStamp(), ap, null);
+		Event e2 = new Event(Event.PROCESS_QUEUES, e.getTimeStamp(), ap, null);
 		scheduler.scheduleEvent(e2);
-		Event e3 = new Event(Event.ADD_TO_ANIMATION, null, e.getTimeStamp(), null, ac);
+		Event e3 = new Event(Event.ADD_TO_ANIMATION, e.getTimeStamp(), null, ac);
 		scheduler.scheduleEvent(e3);
 	}
 

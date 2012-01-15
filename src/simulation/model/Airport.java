@@ -5,19 +5,13 @@ import java.awt.Dimension;
 import java.util.HashSet;
 import java.util.LinkedList;
 
-import simulation.definition.EventHandler;
-import simulation.definition.EventScheduler;
-
-
-
 /**
- * @author ps
- * Simple airport with a single runway used for landing and starting
+ * @author ps Simple airport with a single runway used for landing and starting
  */
-public class Airport implements EventHandler {
-	
+public class Airport {
+
 	private String name;
-	
+
 	// Start goes from (x1,y1) to (x2,y2)
 	// landing goes from (x2,y2) to (x1,y1)
 	private double x1;
@@ -33,46 +27,51 @@ public class Airport implements EventHandler {
 
 	private static int airportCount = 0;
 	private int airportId = 0;
-	public Airport(String name, double x1, double y1, double x2, double y2,int lRH,int lrW){
+
+	public Airport(String name, double x1, double y1, double x2, double y2, int lRH, int lrW) {
 		this.name = name;
 		this.x1 = x1;
 		this.y1 = y1;
 		this.x2 = x2;
 		this.y2 = y2;
 		this.airportId = airportCount++;
-		runwayLength=Math.sqrt((x1-x2)*(x1-x2)+(y1-y2)*(y1-y2));
+		runwayLength = Math.sqrt((x1 - x2) * (x1 - x2) + (y1 - y2) * (y1 - y2));
 		int luftRaumHeight = lRH;
 		int luftRaumWidth = lrW;
 
-		controlArea = new Dimension(luftRaumWidth,luftRaumHeight);
+		controlArea = new Dimension(luftRaumWidth, luftRaumHeight);
 	}
-	
-	public Airport(String name, double x1, double y1, double x2, double y2){
-		this(name,x1,y1,x2,y2,40000,60000);
-		
+
+	public Airport(String name, double x1, double y1, double x2, double y2) {
+		this(name, x1, y1, x2, y2, 40000, 60000);
+
 	}
-	
+
 	/**
 	 * All aircrafts which are on ground or taking off or in the holding loop
-	 * @param the aircraft arriving at this airport
+	 * 
+	 * @param the
+	 *            aircraft arriving at this airport
 	 */
-	public void subscribeAircraft(Aircraft a){
+	public void subscribeAircraft(Aircraft a) {
 		aircrafts.add(a);
 	}
-	
-	public int getAirportId(){
+
+	public int getAirportId() {
 		return this.airportId;
 	}
 
 	/**
 	 * Aircrafts leaving this airport (after take-off)
-	 * @param a the aircraft after taking off
+	 * 
+	 * @param a
+	 *            the aircraft after taking off
 	 */
-	public void unscribeAircraft(Aircraft a){
+	public void unscribeAircraft(Aircraft a) {
 		aircrafts.remove(a);
 	}
-	
-	public void addToStartQueue(Aircraft ac){
+
+	public void addToStartQueue(Aircraft ac) {
 		waitingForTakeOffQueue.addLast(ac);
 	}
 
@@ -80,13 +79,13 @@ public class Airport implements EventHandler {
 		waitingForTakeOffQueue.remove(ac);
 	}
 
-	public Aircraft removeFirstFromStartQueue(){
+	public Aircraft removeFirstFromStartQueue() {
 		if (waitingForTakeOffQueue.size() < 1)
 			throw new RuntimeException("No aircrafts in waiting queue");
 		return waitingForTakeOffQueue.removeFirst();
 	}
 
-	public void addToHoldingQueue(Aircraft ac){
+	public void addToHoldingQueue(Aircraft ac) {
 		waitingForLandingQueue.addLast(ac);
 	}
 
@@ -172,70 +171,16 @@ public class Airport implements EventHandler {
 		this.waitingForLandingQueue = waitingForLandingQueue;
 	}
 
-
 	@Override
 	public String toString() {
 		return "Airport name=" + name + ", x1=" + x1 + ", y1=" + y1 + ", x2=" + x2 + ", y2=" + y2 + "\n  runWayFree="
 				+ runWayFree + ", waitingForTakeOff=" + waitingForTakeOffQueue.size() + ", waitingForLanding="
 				+ waitingForLandingQueue.size();
 	}
-	
-	@Override
-	public void processEvent(Event e, EventScheduler sched) {
-
-		if (e.getType()==Event.READY_FOR_DEPARTURE){
-			// we put the aircraft to the startQueue 
-			Aircraft ac = e.getAirCraft();
-			if (ac.getDestination() == this)
-				throw new RuntimeException("destination = origin");
-			ac.setState(Aircraft.WAITING_FOR_TAKE_OFF);
-			addToStartQueue(ac);
-			Event eNew = new Event(Event.PROCESS_QUEUES,this,e.getTimeStamp(),this,null);
-			sched.scheduleEvent(eNew);
-		}
-		
-		if (e.getType()==Event.ARRIVAL){			
-			// we put the aircraft to the holdingQueue 
-			Aircraft ac = e.getAirCraft();
-			subscribeAircraft(ac);
-			ac.setState(Aircraft.ON_HOLDING_LOOP);
-			ac.setCurrentAirPort(this);
-			ac.setLastX(getX2());
-			ac.setLastY(getY2());
-			ac.setLastTime(e.getTimeStamp());		
-			addToHoldingQueue(ac);
-			Event eNew = new Event(Event.PROCESS_QUEUES,this,e.getTimeStamp(),this,null);
-			sched.scheduleEvent(eNew);
-		}
-
-		if (e.getType()==Event.PROCESS_QUEUES){
-			if (runWayFree){
-				// priority for landing
-				if (waitingForLandingQueue.size() > 0) {
-					Aircraft ac = removeNextFromHoldingQueue();
-					// when is the exact time (ac is on holding loop)
-					// period of the loop:
-					double period = runwayLength * 2 * Math.PI / Aircraft.MAX_SPEED;
-					double m = (e.getTimeStamp() - ac.getLastTime()) / period;
-					int n = (int) Math.ceil(m);
-					long time = (long) (ac.getLastTime() + n * period);
-					Event eNew = new Event(Event.START_LANDING, ac, time, this, ac);
-					sched.scheduleEvent(eNew);
-					runWayFree = false;
-
-				} else if (waitingForTakeOffQueue.size() > 0) {
-					Aircraft ac = removeFirstFromStartQueue();
-					Event eNew = new Event(Event.START_TAKE_OFF, ac, e.getTimeStamp(), this, ac);
-					sched.scheduleEvent(eNew);
-					runWayFree = false;
-					
-				}
-			}
-		}
-	}
 
 	public double getDistanceTo(Airport destination) {
-		return Math.sqrt((x1-destination.getX2())*(x1-destination.getX2())+(y1-destination.getY2())*(y1-destination.getY2()));
+		return Math.sqrt((x1 - destination.getX2()) * (x1 - destination.getX2()) + (y1 - destination.getY2())
+				* (y1 - destination.getY2()));
 	}
 
 	public Dimension getControlarea() {
@@ -246,6 +191,7 @@ public class Airport implements EventHandler {
 		Color[] colors = { Color.ORANGE, Color.BLUE, Color.CYAN, Color.GREEN, Color.PINK };
 		return colors[getAirportId() % colors.length];
 	}
+
 	@Override
 	public int hashCode() {
 		final int prime = 31;

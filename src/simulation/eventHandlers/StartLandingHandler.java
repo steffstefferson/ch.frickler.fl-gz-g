@@ -19,9 +19,9 @@ public class StartLandingHandler implements TransactionalEventHandler {
 		// we assume that the aircraft is landing with a constant negative
 		// acceleration
 		long landingDuration = (long) (2 * ap.getRunwayLength() / Aircraft.MAX_SPEED);
-		Event eNew = new Event(Event.END_LANDING, ac, e.getTimeStamp() + landingDuration, ap, ac);
+		Event eNew = new Event(Event.END_LANDING, e.getTimeStamp() + landingDuration, ap, ac);
 		scheduler.scheduleEvent(eNew);
-		Event e3 = new Event(Event.REMOVE_FROM_ANIMATION, null, e.getTimeStamp(), null, ac);
+		Event e3 = new Event(Event.REMOVE_FROM_ANIMATION, e.getTimeStamp(), null, ac);
 		scheduler.scheduleEvent(e3);
 	}
 

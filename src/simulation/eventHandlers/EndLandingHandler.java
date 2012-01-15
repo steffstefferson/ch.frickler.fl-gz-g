@@ -22,10 +22,10 @@ public class EndLandingHandler implements TransactionalEventHandler {
 		if (ac.getFlightPlan().size() > 0) {
 			Flight f = ac.getFlightPlan().removeNextFlight();
 			ac.setDestination(f.getDestination());
-			Event e2 = new Event(Event.READY_FOR_DEPARTURE, ap, e.getTimeStamp() + f.getTimeGap(), ap, ac);
+			Event e2 = new Event(Event.READY_FOR_DEPARTURE, e.getTimeStamp() + f.getTimeGap(), ap, ac);
 			scheduler.scheduleEvent(e2);
 		}
-		Event e2 = new Event(Event.PROCESS_QUEUES, ap, e.getTimeStamp(), ap, null);
+		Event e2 = new Event(Event.PROCESS_QUEUES, e.getTimeStamp(), ap, null);
 		scheduler.scheduleEvent(e2);
 	}
 

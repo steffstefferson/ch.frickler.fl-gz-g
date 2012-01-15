@@ -19,7 +19,7 @@ public class ArrivalHandler implements TransactionalEventHandler {
 		ac.setLastY(ap.getY2());
 		ac.setLastTime(e.getTimeStamp());
 		ap.addToHoldingQueue(ac);
-		Event eNew = new Event(Event.PROCESS_QUEUES, null, e.getTimeStamp(), ap, ac);
+		Event eNew = new Event(Event.PROCESS_QUEUES, e.getTimeStamp(), ap, ac);
 		scheduler.scheduleEvent(eNew);
 	}
 

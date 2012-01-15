@@ -1,9 +1,7 @@
 package simulation.model;
 
-import simulation.definition.EventHandler;
-import simulation.definition.EventScheduler;
 
-public class Aircraft implements EventHandler {
+public class Aircraft {
 	// states
 	public static final int ON_GROUND = 0;
 	public static final int WAITING_FOR_TAKE_OFF = 1;
@@ -12,9 +10,8 @@ public class Aircraft implements EventHandler {
 	public static final int ARRIVING = 4;
 	public static final int ON_HOLDING_LOOP = 5;
 	public static final int LANDING = 6;
-	public static final String[] stateStrings = { "ON_GROUND",
-			"WAITING_FOR_TAKE_OFF", "TAKING_OFF", "ON_FLIGHT", "ARRIVING",
-			"ON_HOLDING_LOOP", "LANDING" };
+	public static final String[] stateStrings = { "ON_GROUND", "WAITING_FOR_TAKE_OFF", "TAKING_OFF", "ON_FLIGHT",
+			"ARRIVING", "ON_HOLDING_LOOP", "LANDING" };
 
 	private String name;
 	private Airport currentAirPort;
@@ -103,90 +100,6 @@ public class Aircraft implements EventHandler {
 		this.remainingFuel = remainingFuel;
 	}
 
-	@Override
-	public void processEvent(Event e, EventScheduler sched) {
-		Aircraft ac = e.getAirCraft();
-		Airport ap = e.getAirPort();
-
-		if (e.getType() == Event.START_TAKE_OFF) {
-			ac.setState(Aircraft.TAKING_OFF);
-			ac.setLastTime(e.getTimeStamp());
-			// we assume a constant acceleration maxAcceleration
-			long takeOffDuration = MAX_SPEED / MAX_ACCEL;
-			// distance for the accelerating part:
-			double dist = MAX_ACCEL * takeOffDuration * takeOffDuration
-					/ 2.0;
-			// the remaining part
-			double remainingDist = ap.getRunwayLength() - dist;
-			// the remaining distance of the runway we have constant speed
-			if (remainingDist > 0) {
-				takeOffDuration += remainingDist / MAX_SPEED;
-			} else {
-				throw new RuntimeException("runway too short!!");
-			}
-			// schedule next event
-			Event eNew = new Event(Event.END_TAKE_OFF, ac, e.getTimeStamp()
-					+ takeOffDuration, ap, ac); // to do!
-			sched.scheduleEvent(eNew);
-		} else if (e.getType() == Event.END_TAKE_OFF) {
-			ac.setState(ON_FLIGHT);
-			ac.lastX = ap.getX2();
-			ac.lastY = ap.getY2();
-			ac.lastTime = e.getTimeStamp();
-			ap.setRunWayFree(true);
-			ap.unscribeAircraft(ac);
-			long duration = (long) (ap.getDistanceTo(ac.destination) / Aircraft.MAX_SPEED);
-
-			Event e1 = new Event(Event.LEAVE_AIRSPACE, (EventHandler) sched // HACK!
-					, e.getTimeStamp() + duration / 2, ac.getOrigin(), ac); 
-			sched.scheduleEvent(e1);
-			Event e2 = new Event(Event.PROCESS_QUEUES, ap, e.getTimeStamp(),
-					ap, null);
-			sched.scheduleEvent(e2);
-			// my hack
-			EventHandler h = sched instanceof EventHandler ? (EventHandler) sched
-					: null;
-			Event e3 = new Event(Event.ADD_TO_ANIMATION, h, e.getTimeStamp(),
-					null, ac);
-			sched.scheduleEvent(e3);
-		} else if (e.getType() == Event.START_LANDING) {
-			ac.setState(Aircraft.LANDING);
-			ac.lastX = ap.getX2();
-			ac.lastY = ap.getY2();
-			ac.lastTime = e.getTimeStamp();
-			// we assume that the aircraft is landing with a constant negative
-			// acceleration
-			long landingDuration = (long) (2 * destination.getRunwayLength() / MAX_SPEED);
-			Event eNew = new Event(Event.END_LANDING, ac, e.getTimeStamp()
-					+ landingDuration, ap, ac); // to do!
-			sched.scheduleEvent(eNew);
-			EventHandler h = sched instanceof EventHandler ? (EventHandler) sched
-					: null;
-			Event e3 = new Event(Event.REMOVE_FROM_ANIMATION, h,
-					e.getTimeStamp(), null, ac);
-			sched.scheduleEvent(e3);
-		}
-
-		else if (e.getType() == Event.END_LANDING) {
-			ac.setState(ON_GROUND);
-			ac.lastX = ap.getX1();
-			ac.lastY = ap.getY1();
-			ac.lastTime = e.getTimeStamp();
-			ap.setRunWayFree(true);
-			// do we have another flight?
-			if (ac.flightPlan.size() > 0) {
-				Flight f = ac.getFlightPlan().removeNextFlight();
-				ac.setDestination(f.getDestination());
-				Event e2 = new Event(Event.READY_FOR_DEPARTURE, ap,
-						e.getTimeStamp() + f.getTimeGap(), ap, ac);
-				sched.scheduleEvent(e2);
-			}
-			Event e2 = new Event(Event.PROCESS_QUEUES, ap, e.getTimeStamp(),
-					ap, null);
-			sched.scheduleEvent(e2);
-		}
-	}
-
 	public void setFlightPlan(FlightPlan flightPlan) {
 		this.flightPlan = flightPlan;
 	}
@@ -209,11 +122,9 @@ public class Aircraft implements EventHandler {
 			dest = destination.getName();
 		else
 			dest = null;
-		return "Aircraft name=" + name + ", state=" + stateStrings[state]
-				+ "\n  lastX=" + lastX + ", lastY=" + lastY + ", lastTime="
-				+ lastTime + "\n  currentAirPort=" + currentAirPort.getName()
-				+ "\n  origin=" + origin.getName() + "\n  destination=" + dest
-				+ "\n  maxSpeed=" + MAX_SPEED + "\n  maxAcceleration="
+		return "Aircraft name=" + name + ", state=" + stateStrings[state] + "\n  lastX=" + lastX + ", lastY=" + lastY
+				+ ", lastTime=" + lastTime + "\n  currentAirPort=" + currentAirPort.getName() + "\n  origin="
+				+ origin.getName() + "\n  destination=" + dest + "\n  maxSpeed=" + MAX_SPEED + "\n  maxAcceleration="
 				+ MAX_ACCEL;
 	}
 
@@ -247,13 +158,11 @@ public class Aircraft implements EventHandler {
 
 		double angularVelocity = 1; // (2 * Math.PI) / 1;
 
-		double newX = beginRunwayX + Math.cos(angularVelocity * timeDelta)
-				* runwayX + Math.sin(angularVelocity * timeDelta)
-				* runwayXorthogonal;
+		double newX = beginRunwayX + Math.cos(angularVelocity * timeDelta) * runwayX
+				+ Math.sin(angularVelocity * timeDelta) * runwayXorthogonal;
 
-		double newY = beginRunwayY + Math.cos(angularVelocity * timeDelta)
-				* runwayY + Math.sin(angularVelocity * timeDelta)
-				* runwayYorthogonal;
+		double newY = beginRunwayY + Math.cos(angularVelocity * timeDelta) * runwayY
+				+ Math.sin(angularVelocity * timeDelta) * runwayYorthogonal;
 
 		this.setLastX(newX);
 		this.setLastY(newY);
@@ -270,8 +179,7 @@ public class Aircraft implements EventHandler {
 		double distanceX = targetX - orignX;
 		double distanceY = targetY - orignY;
 
-		double betrag = Math.sqrt(Math.pow(distanceX, 2)
-				+ Math.pow(distanceY, 2));
+		double betrag = Math.sqrt(Math.pow(distanceX, 2) + Math.pow(distanceY, 2));
 
 		double nX = distanceX / betrag;
 		double nY = distanceY / betrag;

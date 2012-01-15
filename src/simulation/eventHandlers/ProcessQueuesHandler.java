@@ -21,13 +21,13 @@ public class ProcessQueuesHandler implements TransactionalEventHandler {
 				double m = (e.getTimeStamp() - ac.getLastTime()) / period;
 				int n = (int) Math.ceil(m);
 				long time = (long) (ac.getLastTime() + n * period);
-				Event eNew = new Event(Event.START_LANDING, ac, time, ap, ac);
+				Event eNew = new Event(Event.START_LANDING, time, ap, ac);
 				scheduler.scheduleEvent(eNew);
 				ap.setRunWayFree(false);
 
 			} else if (ap.getWaitingForTakeOffQueue().size() > 0) {
 				final Aircraft ac = ap.removeFirstFromStartQueue();
-				Event eNew = new Event(Event.START_TAKE_OFF, ac, e.getTimeStamp(), ap, ac);
+				Event eNew = new Event(Event.START_TAKE_OFF, e.getTimeStamp(), ap, ac);
 				scheduler.scheduleEvent(eNew);
 				ap.setRunWayFree(false);
 

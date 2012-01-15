@@ -9,7 +9,6 @@ import java.util.Vector;
 
 import simulation.communication.Communication;
 import simulation.communication.Message;
-import simulation.definition.EventHandler;
 import simulation.definition.EventScheduler;
 import simulation.definition.TransactionalEventHandler;
 import simulation.eventHandlers.AddToAnimationHandler;
@@ -37,7 +36,7 @@ import simulation.model.SimWorld;
  * @author ps Manages simulation clock, a event queue and world consisting of
  *         aircrafts and airports
  */
-public class Simulator implements EventScheduler, EventHandler {
+public class Simulator implements EventScheduler {
 
 	private Clock clock = new Clock();
 	private SimWorld world;
@@ -82,37 +81,6 @@ public class Simulator implements EventScheduler, EventHandler {
 		return idofProcessor;
 	}
 
-	@Override
-	public void processEvent(Event e, EventScheduler s) {
-		// we handle only query events!
-		if (e.getType() == Event.ADD_TO_ANIMATION) {
-			animation.addToQuery(e.getAirCraft());
-		} else if (e.getType() == Event.REMOVE_FROM_ANIMATION) {
-			animation.removeFromQuery(e.getAirCraft());
-		} else if (e.getType() == Event.REPAINT_ANIMATION) {
-			// animation.setCurrentTime(e.getTimeStamp());
-			animation.repaint();
-
-			if (evList.size() > 0) {
-				Event eNew = new Event(Event.REPAINT_ANIMATION, this, e.getTimeStamp() + Clock.REPAINT_GAP, null, null);
-				scheduleEvent(eNew);
-			}
-
-		} else if (e.getType() == Event.LEAVE_AIRSPACE) {
-			scheduleEvent(new Event(Event.REMOVE_FROM_ANIMATION, this, e.getTimeStamp(), null, e.getAirCraft()));
-			scheduleEvent(new Event(Event.ENTER_AIRSPACE, this, e.getTimeStamp(), null, e.getAirCraft()));
-		} else if (e.getType() == Event.ENTER_AIRSPACE) {
-			scheduleEvent(new Event(Event.ADD_TO_ANIMATION, this, e.getTimeStamp(), null, e.getAirCraft()));
-			Aircraft ac = e.getAirCraft();
-			Airport origin = ac.getOrigin();
-			Airport dest = ac.getDestination();
-			long duration = (long) (origin.getDistanceTo(dest) / Aircraft.MAX_SPEED);
-			scheduleEvent(new Event(Event.ARRIVAL, dest, e.getTimeStamp() + duration / 2, dest, ac));
-		} else
-			throw new RuntimeException("Scheduler can handle only QUERY events");
-
-	}
-
 	/*
 	 * get the next lower bound of future sending event
 	 */
@@ -150,7 +118,7 @@ public class Simulator implements EventScheduler, EventHandler {
 
 		// If list is empty, start painting (again)
 		if (evList.size() <= 1) {
-			Event eNew = new Event(Event.REPAINT_ANIMATION, this, e.getTimeStamp() + Clock.REPAINT_GAP, null, null);
+			Event eNew = new Event(Event.REPAINT_ANIMATION, e.getTimeStamp() + Clock.REPAINT_GAP, null, null);
 			scheduleEvent(eNew);
 
 			logGui.println("Start paint animation" + e.toString());
@@ -222,7 +190,7 @@ public class Simulator implements EventScheduler, EventHandler {
 		final Event e;
 		final Message message = communication.receive();
 		if (message != null) {
-			Event msgEvent = message.getEvent(world, this);
+			Event msgEvent = message.getEvent(world);
 
 			// Page 30
 			if (msgEvent.isAntiMessage()) {
@@ -235,7 +203,7 @@ public class Simulator implements EventScheduler, EventHandler {
 			} else {
 				addMPIEvent(msgEvent);
 			}
-			e = message.getEvent(world, this);
+			e = message.getEvent(world);
 		} else {
 			e = evList.remove(0); // TODO only remove if we are sure
 									// we
@@ -321,7 +289,7 @@ public class Simulator implements EventScheduler, EventHandler {
 			if (f != null) {
 				ac.setDestination(f.getDestination());
 				Airport ap = ac.getCurrentAirPort();
-				Event e = new Event(Event.READY_FOR_DEPARTURE, ap, f.getTimeGap(), ap, ac);
+				Event e = new Event(Event.READY_FOR_DEPARTURE, f.getTimeGap(), ap, ac);
 				scheduleEvent(e);
 			}
 		}

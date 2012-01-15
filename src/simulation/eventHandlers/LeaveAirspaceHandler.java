@@ -8,8 +8,8 @@ public class LeaveAirspaceHandler implements TransactionalEventHandler {
 
 	@Override
 	public void process(Event e, EventScheduler scheduler) {
-		scheduler.scheduleEvent(new Event(Event.REMOVE_FROM_ANIMATION, null, e.getTimeStamp(), null, e.getAirCraft()));
-		scheduler.scheduleEvent(new Event(Event.ENTER_AIRSPACE, null, e.getTimeStamp(), null, e.getAirCraft()));
+		scheduler.scheduleEvent(new Event(Event.REMOVE_FROM_ANIMATION, e.getTimeStamp(), null, e.getAirCraft()));
+		scheduler.scheduleEvent(new Event(Event.ENTER_AIRSPACE, e.getTimeStamp(), null, e.getAirCraft()));
 
 	}
 

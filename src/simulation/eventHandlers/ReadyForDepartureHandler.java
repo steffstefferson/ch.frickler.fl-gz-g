@@ -16,8 +16,8 @@ public class ReadyForDepartureHandler implements TransactionalEventHandler {
 			throw new RuntimeException("destination = origin");
 		airCraft.setState(Aircraft.WAITING_FOR_TAKE_OFF);
 		airPort.addToStartQueue(airCraft);
-		final Event eNew = new Event(Event.PROCESS_QUEUES, null,
-				e.getTimeStamp(), airPort, airCraft);
+		final Event eNew = new Event(Event.PROCESS_QUEUES, e.getTimeStamp(),
+				airPort, airCraft);
 		scheduler.scheduleEvent(eNew);
 	}
 
@@ -27,8 +27,8 @@ public class ReadyForDepartureHandler implements TransactionalEventHandler {
 		final Airport airPort = e.getAirPort();
 		airCraft.setState(Aircraft.ON_GROUND);
 		airPort.removeFromStartQueue(airCraft);
-		final Event eNew = new Event(Event.PROCESS_QUEUES, null,
-				e.getTimeStamp(), airPort, airCraft);
+		final Event eNew = new Event(Event.PROCESS_QUEUES, e.getTimeStamp(),
+				airPort, airCraft);
 		eNew.setAntiMessage(true);
 		scheduler.scheduleEvent(eNew);
 	}

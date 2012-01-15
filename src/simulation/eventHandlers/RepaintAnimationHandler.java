@@ -13,7 +13,7 @@ public class RepaintAnimationHandler implements TransactionalEventHandler {
 		Animation.getInstance().repaint();
 
 		if (scheduler.getEventList().size() > 0) {
-			Event eNew = new Event(Event.REPAINT_ANIMATION, null, e.getTimeStamp() + Clock.REPAINT_GAP, null, null);
+			Event eNew = new Event(Event.REPAINT_ANIMATION, e.getTimeStamp() + Clock.REPAINT_GAP, null, null);
 			scheduler.scheduleEvent(eNew);
 		}
 
