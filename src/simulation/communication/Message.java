@@ -1,6 +1,7 @@
 package simulation.communication;
 
 import java.io.Serializable;
+import java.util.Arrays;
 import java.util.List;
 
 import simulation.definition.EventHandler;
@@ -45,7 +46,7 @@ public class Message implements Serializable {
 
 	public Event getEvent(SimWorld world, EventHandler eh) {
 		Airport ap = world.getAirport(destination);
-		return new Event(eventType, eh , timeStamp, ap, getAircraft(world));
+		return new Event(eventType, eh, timeStamp, ap, getAircraft(world));
 	}
 
 	private Aircraft getAircraft(SimWorld world) {
@@ -66,10 +67,17 @@ public class Message implements Serializable {
 	private FlightPlan getFlightPlan(SimWorld world) {
 		FlightPlan flightPlan = new FlightPlan();
 		for (int i = 0; i < fpTimegaps.length; i++) {
-			flightPlan.addFlight(new Flight(fpTimegaps[i], world
-					.getAirport(fpDestinations[i])));
+			flightPlan.addFlight(new Flight(fpTimegaps[i], world.getAirport(fpDestinations[i])));
 		}
 		return flightPlan;
+	}
+
+	@Override
+	public String toString() {
+		return "Message [eventType=" + eventType + ", timeStamp=" + timeStamp + ", takeOffTime=" + takeOffTime
+				+ ", aircraftName=" + aircraftName + ", origin=" + origin + ", destination=" + destination
+				+ ", fpTimegaps=" + Arrays.toString(fpTimegaps) + ", fpDestinations=" + Arrays.toString(fpDestinations)
+				+ "]";
 	}
 
 }
