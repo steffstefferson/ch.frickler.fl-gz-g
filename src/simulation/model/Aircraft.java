@@ -146,7 +146,7 @@ public class Aircraft implements EventHandler {
 			long duration = (long) (ap.getDistanceTo(ac.destination) / ac.maxSpeed);
 
 			Event e1 = new Event(Event.LEAVE_AIRSPACE, (EventHandler) sched // HACK!
-					, e.getTimeStamp() + duration / 2, ac.getOrigin(), ac);
+					, e.getTimeStamp() + duration / 2, ac.getOrigin(), ac); 
 			sched.scheduleEvent(e1);
 			Event e2 = new Event(Event.PROCESS_QUEUES, ap, e.getTimeStamp(),
 					ap, null);
@@ -304,30 +304,4 @@ public class Aircraft implements EventHandler {
 		this.setLastX(newX);
 		this.setLastY(newY);
 	}
-
-	@Override
-	public int hashCode() {
-		final int prime = 31;
-		int result = 1;
-		result = prime * result + ((name == null) ? 0 : name.hashCode());
-		return result;
-	}
-
-	@Override
-	public boolean equals(Object obj) {
-		if (this == obj)
-			return true;
-		if (obj == null)
-			return false;
-		if (getClass() != obj.getClass())
-			return false;
-		Aircraft other = (Aircraft) obj;
-		if (name == null) {
-			if (other.name != null)
-				return false;
-		} else if (!name.equals(other.name))
-			return false;
-		return true;
-	}
-
 }
