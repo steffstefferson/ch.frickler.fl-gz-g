@@ -35,8 +35,15 @@ public class Animation extends JFrame implements ActionListener {
 	private Set<Aircraft> aircraftList;
 	private Simulator sim;
 	private Clock clock;
+	private static Animation animation;
 
-	public Animation(Simulator sim, Clock c) throws HeadlessException {
+	public static Animation getInstance(Simulator sim, Clock c)
+	{
+		if (animation == null)
+			animation = new Animation(sim, c);
+		return animation;
+	}
+	private Animation(Simulator sim, Clock c) throws HeadlessException {
 		super();
 
 		this.sim = sim;

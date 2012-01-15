@@ -1,5 +1,7 @@
 package simulation;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Random;
 import java.util.Vector;
 
@@ -7,6 +9,8 @@ import simulation.communication.Communication;
 import simulation.communication.Message;
 import simulation.definition.EventHandler;
 import simulation.definition.EventScheduler;
+import simulation.definition.TransactionalEventHandler;
+import simulation.eventHandlers.ReadyForDepartureHandler;
 import simulation.gui.Animation;
 import simulation.gui.LogGui;
 import simulation.logic.Clock;
@@ -32,6 +36,7 @@ public class Simulator implements EventScheduler, EventHandler {
 	private int totalProcessors = 1;
 	private String[] airportNames = { "ZURICH", "GENF", "BASEL", "BERNE" };
 	private Communication communication;
+	private Map<Integer, TransactionalEventHandler> eventHandlers = new HashMap<Integer, TransactionalEventHandler>();
 
 	private Vector<Event> processedEvents;
 
@@ -39,6 +44,7 @@ public class Simulator implements EventScheduler, EventHandler {
 		this.world = world;
 		evList = new Vector<Event>();
 		processedEvents = new Vector<Event>();
+		eventHandlers.put(Event.READY_FOR_DEPARTURE, new ReadyForDepartureHandler());
 	}
 
 	public Simulator(SimWorld world, boolean bMasterProcess, int idofProcessor,
@@ -124,7 +130,8 @@ public class Simulator implements EventScheduler, EventHandler {
 	}
 
 	private void insertEvent(Event e) {
-
+		if (e.isAntiMessage() && evList.contains(e))
+			evList.remove(e);
 		int pos = 0;
 		while (pos < evList.size()) {
 			Event n = evList.get(pos);
@@ -164,7 +171,9 @@ public class Simulator implements EventScheduler, EventHandler {
 	}
 
 	private void doRollback(Event msgEvent) {
-		// TODO Auto-generated method stub
+
+		eventHandlers.get(msgEvent.getType()).rollback(msgEvent, this);
+		
 		
 	}
 
@@ -194,6 +203,7 @@ public class Simulator implements EventScheduler, EventHandler {
 
 			if (clock.isInPast(msgEvent.getTimeStamp())) {
 				doRollback(msgEvent);
+				
 			} else {
 				addMPIEvent(msgEvent);
 			}
@@ -207,8 +217,9 @@ public class Simulator implements EventScheduler, EventHandler {
 			clock.sleepUntil(e.getTimeStamp());
 		}
 
-		EventHandler eh = e.getEventHandler();
-		eh.processEvent(e, this);
+//		EventHandler eh = e.getEventHandler();
+//		eh.processEvent(e, this);
+		eventHandlers.get(e.getType()).process(e, this);
 
 		// Add to history
 		processedEvents.add(e);
@@ -318,7 +329,7 @@ public class Simulator implements EventScheduler, EventHandler {
 		logGui = new LogGui();
 		logGui.init(this);
 
-		animation = new Animation(this, clock);
+		animation = Animation.getInstance(this, clock);
 		animation.setVisible(true);
 	}
 

@@ -24,8 +24,6 @@ public class Airport implements EventHandler {
 	private Dimension controlArea;
 	private double runwayLength;
 	private boolean runWayFree = true;
-	private int waitingForTakeOff;
-	private int waitingForLanding;
 	HashSet<Aircraft> aircrafts = new HashSet<Aircraft>();
 	LinkedList<Aircraft> waitingForTakeOffQueue = new LinkedList<Aircraft>();
 	LinkedList<Aircraft> waitingForLandingQueue = new LinkedList<Aircraft>();
@@ -33,8 +31,7 @@ public class Airport implements EventHandler {
 	private static int airportCount = 0;
 	private int airportId = 0;
 
-	public Airport(String name, double x1, double y1, double x2, double y2,
-			int lRH, int lrW) {
+	public Airport(String name, double x1, double y1, double x2, double y2, int lRH, int lrW) {
 		this.name = name;
 		this.x1 = x1;
 		this.y1 = y1;
@@ -79,25 +76,25 @@ public class Airport implements EventHandler {
 
 	public void addToStartQueue(Aircraft ac) {
 		waitingForTakeOffQueue.addLast(ac);
-		waitingForTakeOff++;
+	}
+
+	public void removeFromStartQueue(Aircraft ac) {
+		waitingForTakeOffQueue.remove(ac);
 	}
 
 	public Aircraft removeFirstFromStartQueue() {
-		if (waitingForTakeOff < 1)
+		if (waitingForTakeOffQueue.size() < 1)
 			throw new RuntimeException("No aircrafts in waiting queue");
-		waitingForTakeOff--;
 		return waitingForTakeOffQueue.removeFirst();
 	}
 
 	public void addToHoldingQueue(Aircraft ac) {
 		waitingForLandingQueue.addLast(ac);
-		waitingForLanding++;
 	}
 
 	public Aircraft removeNextFromHoldingQueue() {
-		if (waitingForLanding < 1)
+		if (waitingForLandingQueue.size() < 1)
 			throw new RuntimeException("No aircrafts in waiting queue");
-		waitingForLanding--;
 		return waitingForLandingQueue.removeFirst();
 	}
 
@@ -149,22 +146,6 @@ public class Airport implements EventHandler {
 		this.runWayFree = runWayFree;
 	}
 
-	public int getWaitingForTakeOff() {
-		return waitingForTakeOff;
-	}
-
-	public void setWaitingForTakeOff(int waitingForTakeOff) {
-		this.waitingForTakeOff = waitingForTakeOff;
-	}
-
-	public int getWaitingForLanding() {
-		return waitingForLanding;
-	}
-
-	public void setWaitingForLanding(int waitingForLanding) {
-		this.waitingForLanding = waitingForLanding;
-	}
-
 	public HashSet<Aircraft> getAircrafts() {
 		return aircrafts;
 	}
@@ -181,8 +162,7 @@ public class Airport implements EventHandler {
 		return waitingForTakeOffQueue;
 	}
 
-	public void setWaitingForTakeOffQueue(
-			LinkedList<Aircraft> waitingForTakeOffQueue) {
+	public void setWaitingForTakeOffQueue(LinkedList<Aircraft> waitingForTakeOffQueue) {
 		this.waitingForTakeOffQueue = waitingForTakeOffQueue;
 	}
 
@@ -190,17 +170,15 @@ public class Airport implements EventHandler {
 		return waitingForLandingQueue;
 	}
 
-	public void setWaitingForLandingQueue(
-			LinkedList<Aircraft> waitingForLandingQueue) {
+	public void setWaitingForLandingQueue(LinkedList<Aircraft> waitingForLandingQueue) {
 		this.waitingForLandingQueue = waitingForLandingQueue;
 	}
 
 	@Override
 	public String toString() {
-		return "Airport name=" + name + ", x1=" + x1 + ", y1=" + y1 + ", x2="
-				+ x2 + ", y2=" + y2 + "\n  runWayFree=" + runWayFree
-				+ ", waitingForTakeOff=" + waitingForTakeOff
-				+ ", waitingForLanding=" + waitingForLanding;
+		return "Airport name=" + name + ", x1=" + x1 + ", y1=" + y1 + ", x2=" + x2 + ", y2=" + y2 + "\n  runWayFree="
+				+ runWayFree + ", waitingForTakeOff=" + waitingForTakeOffQueue.size() + ", waitingForLanding="
+				+ waitingForLandingQueue.size();
 	}
 
 	@Override
@@ -213,8 +191,7 @@ public class Airport implements EventHandler {
 				throw new RuntimeException("destination = origin");
 			ac.setState(Aircraft.WAITING_FOR_TAKE_OFF);
 			addToStartQueue(ac);
-			Event eNew = new Event(Event.PROCESS_QUEUES, this,
-					e.getTimeStamp(), this, null);
+			Event eNew = new Event(Event.PROCESS_QUEUES, this, e.getTimeStamp(), this, null);
 			sched.scheduleEvent(eNew);
 		}
 
@@ -228,32 +205,28 @@ public class Airport implements EventHandler {
 			ac.setLastY(getY2());
 			ac.setLastTime(e.getTimeStamp());
 			addToHoldingQueue(ac);
-			Event eNew = new Event(Event.PROCESS_QUEUES, this,
-					e.getTimeStamp(), this, null);
+			Event eNew = new Event(Event.PROCESS_QUEUES, this, e.getTimeStamp(), this, null);
 			sched.scheduleEvent(eNew);
 		}
 
 		if (e.getType() == Event.PROCESS_QUEUES) {
 			if (runWayFree) {
 				// priority for landing
-				if (waitingForLanding > 0) {
+				if (waitingForLandingQueue.size() > 0) {
 					Aircraft ac = removeNextFromHoldingQueue();
 					// when is the exact time (ac is on holding loop)
 					// period of the loop:
-					double period = runwayLength * 2 * Math.PI
-							/ ac.getMaxSpeed();
+					double period = runwayLength * 2 * Math.PI / ac.getMaxSpeed();
 					double m = (e.getTimeStamp() - ac.getLastTime()) / period;
 					int n = (int) Math.ceil(m);
 					long time = (long) (ac.getLastTime() + n * period);
-					Event eNew = new Event(Event.START_LANDING, ac, time, this,
-							ac);
+					Event eNew = new Event(Event.START_LANDING, ac, time, this, ac);
 					sched.scheduleEvent(eNew);
 					runWayFree = false;
 
-				} else if (waitingForTakeOff > 0) {
+				} else if (waitingForTakeOffQueue.size() > 0) {
 					Aircraft ac = removeFirstFromStartQueue();
-					Event eNew = new Event(Event.START_TAKE_OFF, ac,
-							e.getTimeStamp(), this, ac);
+					Event eNew = new Event(Event.START_TAKE_OFF, ac, e.getTimeStamp(), this, ac);
 					sched.scheduleEvent(eNew);
 					runWayFree = false;
 
@@ -263,8 +236,7 @@ public class Airport implements EventHandler {
 	}
 
 	public double getDistanceTo(Airport destination) {
-		return Math.sqrt((x1 - destination.getX2())
-				* (x1 - destination.getX2()) + (y1 - destination.getY2())
+		return Math.sqrt((x1 - destination.getX2()) * (x1 - destination.getX2()) + (y1 - destination.getY2())
 				* (y1 - destination.getY2()));
 	}
 
@@ -273,8 +245,7 @@ public class Airport implements EventHandler {
 	}
 
 	public Color getColor() {
-		Color[] colors = { Color.ORANGE, Color.BLUE, Color.CYAN, Color.GREEN,
-				Color.PINK };
+		Color[] colors = { Color.ORANGE, Color.BLUE, Color.CYAN, Color.GREEN, Color.PINK };
 		return colors[getAirportId() % colors.length];
 	}
 
