@@ -67,7 +67,7 @@ public class Airport {
 	 * @param a
 	 *            the aircraft after taking off
 	 */
-	public void unscribeAircraft(Aircraft a) {
+	public void unsubscribeAircraft(Aircraft a) {
 		aircrafts.remove(a);
 	}
 
@@ -93,6 +93,10 @@ public class Airport {
 		if (waitingForLandingQueue.size() < 1)
 			throw new RuntimeException("No aircrafts in waiting queue");
 		return waitingForLandingQueue.removeFirst();
+	}
+
+	public void removeFromHoldingQueue(Aircraft ac) {
+		waitingForLandingQueue.remove(ac);
 	}
 
 	public String getName() {
@@ -213,5 +217,4 @@ public class Airport {
 			return false;
 		return true;
 	}
-
 }

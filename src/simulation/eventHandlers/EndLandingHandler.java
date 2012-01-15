@@ -25,14 +25,28 @@ public class EndLandingHandler implements TransactionalEventHandler {
 			Event e2 = new Event(Event.READY_FOR_DEPARTURE, e.getTimeStamp() + f.getTimeGap(), ap, ac);
 			scheduler.scheduleEvent(e2);
 		}
-		Event e2 = new Event(Event.PROCESS_QUEUES, e.getTimeStamp(), ap, null);
+		Event e2 = new Event(Event.PROCESS_QUEUES, e.getTimeStamp(), ap, ac);
 		scheduler.scheduleEvent(e2);
 	}
 
 	@Override
 	public void rollback(Event e, EventScheduler scheduler) {
-		// TODO Auto-generated method stub
-
+		final Aircraft ac = e.getAirCraft();
+		final Airport ap = e.getAirPort();
+		ac.setState(Aircraft.LANDING);
+		ac.setLastX(ap.getX2());
+		ac.setLastY(ap.getY2());
+		// TODO last time?
+		ap.setRunWayFree(false);
+		Flight f = ac.getFlightPlan().getPreviousFlight();
+		if (!ac.getDestination().equals(ap) && f != null) {
+			ac.setDestination(ap);
+			Event nextFlight = new Event(Event.READY_FOR_DEPARTURE, e.getTimeStamp() + f.getTimeGap(), ap, ac);
+			nextFlight.setAntiMessage(true);
+			scheduler.scheduleEvent(nextFlight);
+		}
+		Event e2 = new Event(Event.PROCESS_QUEUES, e.getTimeStamp(), ap, ac);
+		e2.setAntiMessage(true);
+		scheduler.scheduleEvent(e2);
 	}
-
 }

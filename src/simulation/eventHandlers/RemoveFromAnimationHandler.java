@@ -14,8 +14,7 @@ public class RemoveFromAnimationHandler implements TransactionalEventHandler {
 
 	@Override
 	public void rollback(Event e, EventScheduler scheduler) {
-		// TODO Auto-generated method stub
-
+		Animation.getInstance().addToQuery(e.getAirCraft());
 	}
 
 }

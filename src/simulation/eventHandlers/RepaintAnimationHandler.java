@@ -21,7 +21,7 @@ public class RepaintAnimationHandler implements TransactionalEventHandler {
 
 	@Override
 	public void rollback(Event e, EventScheduler scheduler) {
-		// TODO Auto-generated method stub
+		// nothing to do
 
 	}
 

@@ -25,8 +25,16 @@ public class ArrivalHandler implements TransactionalEventHandler {
 
 	@Override
 	public void rollback(Event e, EventScheduler scheduler) {
-		// TODO Auto-generated method stub
-
+		final Aircraft ac = e.getAirCraft();
+		final Airport ap = e.getAirPort();
+		ap.unsubscribeAircraft(ac);
+		ac.setState(Aircraft.ON_FLIGHT);
+		ac.setCurrentAirPort(ac.getOrigin());
+		// TODO x? y? lastTime?
+		ap.removeFromHoldingQueue(ac);
+		Event eNew = new Event(Event.PROCESS_QUEUES, e.getTimeStamp(), ap, ac);
+		eNew.setAntiMessage(true);
+		scheduler.scheduleEvent(eNew);
 	}
 
 }

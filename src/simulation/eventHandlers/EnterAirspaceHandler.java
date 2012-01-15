@@ -20,8 +20,16 @@ public class EnterAirspaceHandler implements TransactionalEventHandler {
 
 	@Override
 	public void rollback(Event e, EventScheduler scheduler) {
-		// TODO Auto-generated method stub
-
+		final Aircraft ac = e.getAirCraft();
+		final Event addToAnimation = new Event(Event.ADD_TO_ANIMATION, e.getTimeStamp(), null, ac);
+		addToAnimation.setAntiMessage(true);
+		scheduler.scheduleEvent(addToAnimation);
+		Airport origin = ac.getOrigin();
+		Airport dest = ac.getDestination();
+		long duration = (long) (origin.getDistanceTo(dest) / Aircraft.MAX_SPEED);
+		final Event arrival = new Event(Event.ARRIVAL, e.getTimeStamp() + duration / 2, dest, ac);
+		arrival.setAntiMessage(true);
+		scheduler.scheduleEvent(arrival);
 	}
 
 }

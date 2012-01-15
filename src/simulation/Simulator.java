@@ -150,8 +150,13 @@ public class Simulator implements EventScheduler {
 		for (int i = processedEvents.size() - 1; i >= 0; i--) {
 			Event event = processedEvents.get(i);
 			if (!clock.isInPast(event.getTimeStamp()))
-				eventHandlers.get(event.getType()).rollback(event, this);
+				rollbackEvent(event);
 		}
+	}
+
+	private void rollbackEvent(Event event) {
+		System.out.println("Rolling back event " + event);
+		eventHandlers.get(event.getType()).rollback(event, this);
 	}
 
 	/**
@@ -174,13 +179,17 @@ public class Simulator implements EventScheduler {
 			e = evList.get(0);
 		}
 
-		logGui.println("Process next event:" + e);
 		if (e.getTimeStamp() > clock.currentSimulationTime()) {
 			clock.sleepUntil(e.getTimeStamp());
 		}
 
-		eventHandlers.get(e.getType()).process(e, this);
+		processEvent(e);
+	}
 
+	private void processEvent(final Event e) {
+		System.out.println("Processing event " + e);
+		logGui.println("Process next event:" + e);
+		eventHandlers.get(e.getType()).process(e, this);
 		moveToProcessedQueue(e);
 	}
 
