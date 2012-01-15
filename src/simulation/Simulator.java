@@ -49,7 +49,7 @@ public class Simulator implements EventScheduler {
 	private String[] airportNames = { "ZURICH", "GENF", "BASEL", "BERNE" };
 	private Communication communication;
 	private Map<Integer, TransactionalEventHandler> eventHandlers = new HashMap<Integer, TransactionalEventHandler>();
-	private Vector<Event> processedEvents;
+	private List<Event> processedEvents;
 
 	public Simulator(SimWorld world) {
 		this.world = world;
@@ -102,33 +102,33 @@ public class Simulator implements EventScheduler {
 	public void scheduleEvent(Event e) {
 
 		if (e.getType() == Event.ENTER_AIRSPACE) {
+			// pass aircraft on to next airport
 			communication.send(e, e.getAirCraft());
-			return;
-		}
+		} else {
+			// handle event locally
+			insertEvent(e);
+			if (evList.size() <= 1) {
+				Event eNew = new Event(Event.REPAINT_ANIMATION, e.getTimeStamp() + Clock.REPAINT_GAP, null, null);
+				scheduleEvent(eNew);
 
-		// long timeEvent = e.getTimeStamp();
+				logGui.println("Start paint animation" + e.toString());
+			}
 
-		// if (clock.isInPast(timeEvent)) {
-		// throw new RuntimeException("Causality error: " + e + "tim: "
-		// + timeEvent + " currentSimulationTime"
-		// + clock.currentSimulationTime());
-		//
-		// }
-		insertEvent(e);
+			// if (clock.isInPast(e.getTimeStamp())) {
+			// throw new RuntimeException("Causality error: " + e + "tim: " +
+			// e.getTimeStamp()
+			// + " currentSimulationTime" + clock.currentSimulationTime());
+			// }
 
-		// If list is empty, start painting (again)
-		if (evList.size() <= 1) {
-			Event eNew = new Event(Event.REPAINT_ANIMATION, e.getTimeStamp() + Clock.REPAINT_GAP, null, null);
-			scheduleEvent(eNew);
-
-			logGui.println("Start paint animation" + e.toString());
 		}
 
 	}
 
 	private void insertEvent(Event e) {
-		if (e.isAntiMessage() && evList.contains(e))
+		// antimessage and normal message cancel each other out
+		if (evList.contains(e))
 			evList.remove(e);
+
 		int pos = 0;
 		while (pos < evList.size()) {
 			Event n = evList.get(pos);
@@ -140,45 +140,17 @@ public class Simulator implements EventScheduler {
 		evList.add(pos, e);
 	}
 
-	private Event removeEvent(Event e) {
-		int pos = 0;
-		while (pos < evList.size()) {
-			Event n = evList.get(pos);
-			if (e.equals(n))
-				break;
-			pos++;
-		}
-
-		return evList.remove(pos);
-	}
-
-	private void handleAntiMessage(Event msgEvent) {
-		if (!clock.isInPast(msgEvent.getTimeStamp())) { // has not yet been
-														// proccssed
-
-			if (removeEvent(msgEvent) == null) { // If Message has been
-													// recieved, remove event
-				// Event has not yet been recived
-				insertEvent(msgEvent);
-			}
-
-		} else { // Message has been processed
-			doRollback(msgEvent);
-		}
-	}
-
-	private void doRollback(Event msgEvent) {
-
-		eventHandlers.get(msgEvent.getType()).rollback(msgEvent, this);
-
-	}
-
-	private void addMPIEvent(Event msgEvent) {
-		if (!evList.contains(msgEvent)) { // There is no Anti-Message in
-											// the queue
-			insertEvent(msgEvent); // Insert event into queue
-		} else {
-			removeEvent(msgEvent); // Remove anti-Message
+	/**
+	 * rollback all processed events that are newer than the stragglerEvent
+	 * 
+	 * @param stragglerEvent
+	 */
+	private void doRollback(Event stragglerEvent) {
+		clock.rollbackTo(stragglerEvent.getTimeStamp());
+		for (int i = processedEvents.size() - 1; i >= 0; i--) {
+			Event event = processedEvents.get(i);
+			if (!clock.isInPast(event.getTimeStamp()))
+				eventHandlers.get(event.getType()).rollback(event, this);
 		}
 	}
 
@@ -190,35 +162,31 @@ public class Simulator implements EventScheduler {
 		final Event e;
 		final Message message = communication.receive();
 		if (message != null) {
-			Event msgEvent = message.getEvent(world);
-
-			// Page 30
-			if (msgEvent.isAntiMessage()) {
-				handleAntiMessage(msgEvent);
-			}
-
-			if (clock.isInPast(msgEvent.getTimeStamp())) {
-				doRollback(msgEvent);
-
-			} else {
-				addMPIEvent(msgEvent);
-			}
 			e = message.getEvent(world);
+			if (clock.isInPast(e.getTimeStamp())) {
+				// we received a straggler message, roll back everything up to
+				// its timestamp
+				doRollback(e);
+			}
+			insertEvent(e);
+
 		} else {
-			e = evList.remove(0); // TODO only remove if we are sure
-									// we
-									// are allowed to process
+			e = evList.get(0);
 		}
+
 		logGui.println("Process next event:" + e);
 		if (e.getTimeStamp() > clock.currentSimulationTime()) {
 			clock.sleepUntil(e.getTimeStamp());
 		}
 
-		// EventHandler eh = e.getEventHandler();
-		// eh.processEvent(e, this);
 		eventHandlers.get(e.getType()).process(e, this);
-		// Add to history
+
+		moveToProcessedQueue(e);
+	}
+
+	private void moveToProcessedQueue(final Event e) {
 		processedEvents.add(e);
+		evList.remove(e);
 	}
 
 	/**

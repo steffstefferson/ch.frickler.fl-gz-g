@@ -13,8 +13,7 @@ public class Clock {
 	}
 
 	public void sleepUntil(long targetSimulationTime) {
-		final long simulationTimeDelta = targetSimulationTime
-				- currentSimulationTime;
+		final long simulationTimeDelta = targetSimulationTime - currentSimulationTime;
 		try {
 			final long sleepTime = simulationTimeDelta * 1000 / SCALE_FACTOR;
 			Thread.sleep(sleepTime);
@@ -27,5 +26,9 @@ public class Clock {
 
 	public boolean isInPast(long timeEvent) {
 		return timeEvent < currentSimulationTime;
+	}
+
+	public void rollbackTo(long timeStamp) {
+		currentSimulationTime = timeStamp;
 	}
 }
