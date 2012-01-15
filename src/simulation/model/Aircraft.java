@@ -26,8 +26,8 @@ public class Aircraft implements EventHandler {
 	private Airport destination;
 	private FlightPlan flightPlan = new FlightPlan();
 	private long remainingFuel;
-	private long maxSpeed = 100;
-	private long maxAcceleration = 5;
+	public static long MAX_SPEED = 100;
+	public static long MAX_ACCEL = 5;
 
 	public Aircraft(String name, Airport ap) {
 		this.name = name;
@@ -103,14 +103,6 @@ public class Aircraft implements EventHandler {
 		this.remainingFuel = remainingFuel;
 	}
 
-	public long getMaxSpeed() {
-		return maxSpeed;
-	}
-
-	public void setMaxSpeed(long maxSpeed) {
-		this.maxSpeed = maxSpeed;
-	}
-
 	@Override
 	public void processEvent(Event e, EventScheduler sched) {
 		Aircraft ac = e.getAirCraft();
@@ -120,15 +112,15 @@ public class Aircraft implements EventHandler {
 			ac.setState(Aircraft.TAKING_OFF);
 			ac.setLastTime(e.getTimeStamp());
 			// we assume a constant acceleration maxAcceleration
-			long takeOffDuration = maxSpeed / maxAcceleration;
+			long takeOffDuration = MAX_SPEED / MAX_ACCEL;
 			// distance for the accelerating part:
-			double dist = maxAcceleration * takeOffDuration * takeOffDuration
+			double dist = MAX_ACCEL * takeOffDuration * takeOffDuration
 					/ 2.0;
 			// the remaining part
 			double remainingDist = ap.getRunwayLength() - dist;
 			// the remaining distance of the runway we have constant speed
 			if (remainingDist > 0) {
-				takeOffDuration += remainingDist / maxSpeed;
+				takeOffDuration += remainingDist / MAX_SPEED;
 			} else {
 				throw new RuntimeException("runway too short!!");
 			}
@@ -143,7 +135,7 @@ public class Aircraft implements EventHandler {
 			ac.lastTime = e.getTimeStamp();
 			ap.setRunWayFree(true);
 			ap.unscribeAircraft(ac);
-			long duration = (long) (ap.getDistanceTo(ac.destination) / ac.maxSpeed);
+			long duration = (long) (ap.getDistanceTo(ac.destination) / Aircraft.MAX_SPEED);
 
 			Event e1 = new Event(Event.LEAVE_AIRSPACE, (EventHandler) sched // HACK!
 					, e.getTimeStamp() + duration / 2, ac.getOrigin(), ac); 
@@ -164,7 +156,7 @@ public class Aircraft implements EventHandler {
 			ac.lastTime = e.getTimeStamp();
 			// we assume that the aircraft is landing with a constant negative
 			// acceleration
-			long landingDuration = (long) (2 * destination.getRunwayLength() / maxSpeed);
+			long landingDuration = (long) (2 * destination.getRunwayLength() / MAX_SPEED);
 			Event eNew = new Event(Event.END_LANDING, ac, e.getTimeStamp()
 					+ landingDuration, ap, ac); // to do!
 			sched.scheduleEvent(eNew);
@@ -195,14 +187,6 @@ public class Aircraft implements EventHandler {
 		}
 	}
 
-	public void setMaxAcceleration(long maxAcceleration) {
-		this.maxAcceleration = maxAcceleration;
-	}
-
-	public long getMaxAcceleration() {
-		return maxAcceleration;
-	}
-
 	public void setFlightPlan(FlightPlan flightPlan) {
 		this.flightPlan = flightPlan;
 	}
@@ -229,8 +213,8 @@ public class Aircraft implements EventHandler {
 				+ "\n  lastX=" + lastX + ", lastY=" + lastY + ", lastTime="
 				+ lastTime + "\n  currentAirPort=" + currentAirPort.getName()
 				+ "\n  origin=" + origin.getName() + "\n  destination=" + dest
-				+ "\n  maxSpeed=" + maxSpeed + "\n  maxAcceleration="
-				+ maxAcceleration;
+				+ "\n  maxSpeed=" + MAX_SPEED + "\n  maxAcceleration="
+				+ MAX_ACCEL;
 	}
 
 	public void calcPosition(long currentSimulationTime) {
@@ -298,8 +282,8 @@ public class Aircraft implements EventHandler {
 		if (timeDelta < 0)
 			return;
 
-		double newX = orignX + timeDelta * getMaxSpeed() * nX;
-		double newY = orignY + timeDelta * getMaxSpeed() * nY;
+		double newX = orignX + timeDelta * MAX_SPEED * nX;
+		double newY = orignY + timeDelta * MAX_SPEED * nY;
 
 		this.setLastX(newX);
 		this.setLastY(newY);

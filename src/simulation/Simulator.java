@@ -1,6 +1,8 @@
 package simulation;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Random;
 import java.util.Vector;
@@ -10,7 +12,18 @@ import simulation.communication.Message;
 import simulation.definition.EventHandler;
 import simulation.definition.EventScheduler;
 import simulation.definition.TransactionalEventHandler;
+import simulation.eventHandlers.AddToAnimationHandler;
+import simulation.eventHandlers.ArrivalHandler;
+import simulation.eventHandlers.EndLandingHandler;
+import simulation.eventHandlers.EndTakeOffHandler;
+import simulation.eventHandlers.EnterAirspaceHandler;
+import simulation.eventHandlers.LeaveAirspaceHandler;
+import simulation.eventHandlers.ProcessQueuesHandler;
 import simulation.eventHandlers.ReadyForDepartureHandler;
+import simulation.eventHandlers.RemoveFromAnimationHandler;
+import simulation.eventHandlers.RepaintAnimationHandler;
+import simulation.eventHandlers.StartLandingHandler;
+import simulation.eventHandlers.StartTakeOffHandler;
 import simulation.gui.Animation;
 import simulation.gui.LogGui;
 import simulation.logic.Clock;
@@ -31,7 +44,7 @@ public class Simulator implements EventScheduler, EventHandler {
 	private LogGui logGui;
 	private int idofProcessor = 0;
 	private boolean isMaster = false;
-	private Vector<Event> evList; // time ordered list
+	private List<Event> evList; // time ordered list
 	private Animation animation;
 	private int totalProcessors = 1;
 	private String[] airportNames = { "ZURICH", "GENF", "BASEL", "BERNE" };
@@ -41,9 +54,21 @@ public class Simulator implements EventScheduler, EventHandler {
 
 	public Simulator(SimWorld world) {
 		this.world = world;
-		evList = new Vector<Event>();
+		evList = new ArrayList<Event>();
 		processedEvents = new Vector<Event>();
 		eventHandlers.put(Event.READY_FOR_DEPARTURE, new ReadyForDepartureHandler());
+		eventHandlers.put(Event.START_TAKE_OFF, new StartTakeOffHandler());
+		eventHandlers.put(Event.END_TAKE_OFF, new EndTakeOffHandler());
+		eventHandlers.put(Event.ARRIVAL, new ArrivalHandler());
+		eventHandlers.put(Event.START_LANDING, new StartLandingHandler());
+		eventHandlers.put(Event.END_LANDING, new EndLandingHandler());
+		eventHandlers.put(Event.PROCESS_QUEUES, new ProcessQueuesHandler());
+		eventHandlers.put(Event.ADD_TO_ANIMATION, new AddToAnimationHandler());
+		eventHandlers.put(Event.REMOVE_FROM_ANIMATION, new RemoveFromAnimationHandler());
+		eventHandlers.put(Event.REPAINT_ANIMATION, new RepaintAnimationHandler());
+		eventHandlers.put(Event.LEAVE_AIRSPACE, new LeaveAirspaceHandler());
+		eventHandlers.put(Event.ENTER_AIRSPACE, new EnterAirspaceHandler());
+
 	}
 
 	public Simulator(SimWorld world, boolean bMasterProcess, int idofProcessor, int totalProcessors) {
@@ -81,7 +106,7 @@ public class Simulator implements EventScheduler, EventHandler {
 			Aircraft ac = e.getAirCraft();
 			Airport origin = ac.getOrigin();
 			Airport dest = ac.getDestination();
-			long duration = (long) (origin.getDistanceTo(dest) / ac.getMaxSpeed());
+			long duration = (long) (origin.getDistanceTo(dest) / Aircraft.MAX_SPEED);
 			scheduleEvent(new Event(Event.ARRIVAL, dest, e.getTimeStamp() + duration / 2, dest, ac));
 		} else
 			throw new RuntimeException("Scheduler can handle only QUERY events");
@@ -113,7 +138,7 @@ public class Simulator implements EventScheduler, EventHandler {
 			return;
 		}
 
-		long timeEvent = e.getTimeStamp();
+		// long timeEvent = e.getTimeStamp();
 
 		// if (clock.isInPast(timeEvent)) {
 		// throw new RuntimeException("Causality error: " + e + "tim: "
@@ -325,7 +350,7 @@ public class Simulator implements EventScheduler, EventHandler {
 		logGui = new LogGui();
 		logGui.init(this);
 
-		animation = Animation.getInstance(this, clock);
+		animation = Animation.init(this, clock);
 		animation.setVisible(true);
 	}
 
@@ -343,6 +368,11 @@ public class Simulator implements EventScheduler, EventHandler {
 
 	public void setCommunication(Communication communication) {
 		this.communication = communication;
+	}
+
+	@Override
+	public List<Event> getEventList() {
+		return evList;
 	}
 
 }

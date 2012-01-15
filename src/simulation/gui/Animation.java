@@ -37,12 +37,15 @@ public class Animation extends JFrame implements ActionListener {
 	private Clock clock;
 	private static Animation animation;
 
-	public static Animation getInstance(Simulator sim, Clock c)
-	{
-		if (animation == null)
-			animation = new Animation(sim, c);
+	public static Animation init(Simulator sim, Clock c) {
+		animation = new Animation(sim, c);
 		return animation;
 	}
+
+	public static Animation getInstance() {
+		return animation;
+	}
+
 	private Animation(Simulator sim, Clock c) throws HeadlessException {
 		super();
 
@@ -50,23 +53,23 @@ public class Animation extends JFrame implements ActionListener {
 		this.clock = c;
 		this.aircraftList = new HashSet<Aircraft>();
 
-		this.setTitle("ProcessId: "+sim.getIdofProcessor()+" isMaster: "+sim.isMaster());
-		
+		this.setTitle("ProcessId: " + sim.getIdofProcessor() + " isMaster: " + sim.isMaster());
+
 		setBounds(0, 0, 1024, 768);
 		setLayout(null);
 
 	}
 
 	public void paint(Graphics g) {
-		try{
-		super.paint(g); // this causes the flackering
-		printAirports(g);
-		printAircrafts(g);
-		}catch(Exception ex){
+		try {
+			super.paint(g); // this causes the flackering
+			printAirports(g);
+			printAircrafts(g);
+		} catch (Exception ex) {
 			// catch the ConcurrentModificationException
 		}
 	}
-	
+
 	private void printAirports(Graphics g) {
 		SimWorld world = sim.getSimWorld();
 		HashMap<String, Airport> aps = world.getAirports();
@@ -82,15 +85,15 @@ public class Animation extends JFrame implements ActionListener {
 			int[] y = new int[] { flughafenY, getYonMap(a.getY2()) };
 			g.setColor(a.getColor());
 			g.drawPolygon(x, y, x.length);
-			
+
 			Dimension dim = a.getControlarea();
-			int xArea = getXonMap(a.getX1()-dim.getWidth());
-			int yArea = getYonMap(a.getY1()-dim.getHeight());
-			
-			int xArea1 = getXonMap(a.getX1()+dim.getWidth());
-			int yArea1 = getYonMap(a.getY1()+dim.getHeight());
-			
-			g.drawRect(xArea,yArea1,xArea1-xArea,yArea-yArea1);
+			int xArea = getXonMap(a.getX1() - dim.getWidth());
+			int yArea = getYonMap(a.getY1() - dim.getHeight());
+
+			int xArea1 = getXonMap(a.getX1() + dim.getWidth());
+			int yArea1 = getYonMap(a.getY1() + dim.getHeight());
+
+			g.drawRect(xArea, yArea1, xArea1 - xArea, yArea - yArea1);
 
 		}
 
@@ -136,8 +139,8 @@ public class Animation extends JFrame implements ActionListener {
 		float height = getHeight() - BOARDER; // map boarder
 		float einheitY = height / (Y_MAX - Y_MIN);
 
-		int ret =  (int) (einheitY * (Y_MAX - CoordinateY) + BOARDER / 2);
-		
+		int ret = (int) (einheitY * (Y_MAX - CoordinateY) + BOARDER / 2);
+
 		return ret < 0 ? 0 : ret;
 	}
 

@@ -215,7 +215,7 @@ public class Airport implements EventHandler {
 					Aircraft ac = removeNextFromHoldingQueue();
 					// when is the exact time (ac is on holding loop)
 					// period of the loop:
-					double period = runwayLength * 2 * Math.PI / ac.getMaxSpeed();
+					double period = runwayLength * 2 * Math.PI / Aircraft.MAX_SPEED;
 					double m = (e.getTimeStamp() - ac.getLastTime()) / period;
 					int n = (int) Math.ceil(m);
 					long time = (long) (ac.getLastTime() + n * period);
