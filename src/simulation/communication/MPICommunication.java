@@ -12,11 +12,12 @@ public class MPICommunication implements Communication {
 
 	@Override
 	public void send(Event event, Aircraft aircraft) {
-		System.out.println("sending Event " + event.toString());
+		Message[]  m= new Message[] { new Message(event, aircraft) };
+		System.out.println("sending Message " +m[0]);
 		int n = MPI.COMM_WORLD.SizeTotal();
 		final int dest = aircraft.getDestination().getAirportId() % n;
 		System.out.println("n = " + n + ",dest = " + dest);
-		MPI.COMM_WORLD.Send(new Message[] { new Message(event, aircraft) }, 0, 1, MPI.OBJECT, dest, 1);
+		MPI.COMM_WORLD.Send(m, 0, 1, MPI.OBJECT, dest, 1);
 	}
 
 	@Override
@@ -33,7 +34,7 @@ public class MPICommunication implements Communication {
 				requests[i] = null;
 			}
 			if (messages[i] != null) {
-				System.out.println("Message is " + messages[i]);
+				System.out.println("Received message is " + messages[i]);
 				Message retMessage = messages[i];
 				messages[i] = null;
 				return retMessage;
