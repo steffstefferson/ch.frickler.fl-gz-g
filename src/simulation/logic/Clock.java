@@ -19,7 +19,6 @@ public class Clock {
 			Thread.sleep(sleepTime);
 			currentSimulationTime = targetSimulationTime;
 		} catch (InterruptedException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 	}

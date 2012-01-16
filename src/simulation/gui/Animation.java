@@ -102,7 +102,6 @@ public class Animation extends JFrame implements ActionListener {
 	}
 
 	private void printAircrafts(Graphics g) {
-		// TODO: Fredsave because of ConcurrentModificationException?
 		for (Aircraft ac : aircraftList) {
 
 			ac.calcPosition(clock.currentSimulationTime());
