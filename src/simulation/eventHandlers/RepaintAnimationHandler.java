@@ -10,7 +10,7 @@ public class RepaintAnimationHandler implements TransactionalEventHandler {
 
 	@Override
 	public void process(Event e, EventScheduler scheduler) {
-		Animation.getInstance().repaint();
+		Animation.getInstance().repaintAircrafts();
 
 		if (scheduler.getEventList().size() > 1) {
 			Event eNew = new Event(Event.REPAINT_ANIMATION, e.getTimeStamp() + Clock.REPAINT_GAP, null, null);
