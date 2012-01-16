@@ -1,22 +1,39 @@
 package simulation.model;
 
-import javax.management.RuntimeErrorException;
+import java.util.HashMap;
+import java.util.Map;
 
-public class RollBackVariables {
+public class RollBackVariables{
 
-	private long lastEventTimeStamp;
+	private Map<String, Object> values = new HashMap<String, Object>();
 
-	public RollBackVariables(long timeStamp) {
-		this.lastEventTimeStamp = timeStamp;
+	public RollBackVariables(String key, Object value) {
+		values.put(key, value);
 	}
 
-	public long getLastEventTimeStamp() {
-		if(lastEventTimeStamp == 0) throw new RuntimeException("lastEventTimeStamp not set");
-		return lastEventTimeStamp;
+	public Object getValue(String key) {
+		Object value = values.get(key);
+		if (value == null)
+			throw new RuntimeException("value not set");
+		return value;
 	}
 
-	public void setLastEventTimeStamp(long lastEventTimeStamp) {
-		this.lastEventTimeStamp = lastEventTimeStamp;
+	/**
+	 * 
+	 * @return the stored value as a long
+	 */
+	public long getLongValue(String key) {
+		Long l = (Long) getValue(key);
+		return l;
+	}
+
+	public boolean getBooleanValue(String key){
+		Boolean b = (Boolean) getValue(key);
+		return b;
 	}
 	
+	public void setValue(String key, Object value) {
+		this.values.put(key, value);
+	}
+
 }

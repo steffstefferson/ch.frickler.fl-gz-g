@@ -10,6 +10,8 @@ import simulation.model.RollBackVariables;
 
 public class EndLandingHandler implements TransactionalEventHandler {
 
+	private static final String ROLLBACK_VAR_KEY = "LAST_TIME";
+	
 	@Override
 	public void process(Event e, EventScheduler scheduler) {
 		final Aircraft ac = e.getAirCraft();
@@ -17,7 +19,7 @@ public class EndLandingHandler implements TransactionalEventHandler {
 		ac.setState(Aircraft.ON_GROUND);
 		ac.setLastX(ap.getX1());
 		ac.setLastY(ap.getY1());
-		e.setRollBackVariable(new RollBackVariables(ac.getLastTime()));
+		e.setRollBackVariable(new RollBackVariables(EndLandingHandler.ROLLBACK_VAR_KEY,ac.getLastTime()));
 		ac.setLastTime(e.getTimeStamp());
 		ap.setRunWayFree(true);
 		// do we have another flight?
@@ -38,7 +40,7 @@ public class EndLandingHandler implements TransactionalEventHandler {
 		ac.setState(Aircraft.LANDING);
 		ac.setLastX(ap.getX2());
 		ac.setLastY(ap.getY2());
-		ac.setLastTime(e.getRollBackVariable().getLastEventTimeStamp());
+		ac.setLastTime(e.getRollBackVariable().getLongValue(EndLandingHandler.ROLLBACK_VAR_KEY));
 		ap.setRunWayFree(false);
 		Flight f = ac.getFlightPlan().getPreviousFlight();
 		if (!ac.getDestination().equals(ap) && f != null) {

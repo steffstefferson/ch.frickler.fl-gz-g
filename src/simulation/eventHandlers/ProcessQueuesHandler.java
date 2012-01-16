@@ -5,9 +5,13 @@ import simulation.definition.TransactionalEventHandler;
 import simulation.model.Aircraft;
 import simulation.model.Airport;
 import simulation.model.Event;
+import simulation.model.RollBackVariables;
 
 public class ProcessQueuesHandler implements TransactionalEventHandler {
 
+	private static final String KEY_ROLLBACK_LANDING = "WAS_LANDING";
+	private static final String KEY_ROLLBACK_TIME = "TIME";
+	
 	@Override
 	public void process(Event e, EventScheduler scheduler) {
 		final Airport ap = e.getAirPort();
@@ -24,21 +28,50 @@ public class ProcessQueuesHandler implements TransactionalEventHandler {
 				Event eNew = new Event(Event.START_LANDING, time, ap, ac);
 				scheduler.scheduleEvent(eNew);
 				ap.setRunWayFree(false);
+				// store the state for a later rollback
+				RollBackVariables vars = new RollBackVariables(ProcessQueuesHandler.KEY_ROLLBACK_LANDING, true);
+				vars.setValue(ProcessQueuesHandler.KEY_ROLLBACK_TIME, eNew.getTimeStamp());
+				e.setRollBackVariable(vars);
+				e.setAirCraft(ac);
 
 			} else if (ap.getWaitingForTakeOffQueue().size() > 0) {
 				final Aircraft ac = ap.removeFirstFromStartQueue();
 				Event eNew = new Event(Event.START_TAKE_OFF, e.getTimeStamp(), ap, ac);
 				scheduler.scheduleEvent(eNew);
 				ap.setRunWayFree(false);
-
+				// store the state for a later rollback
+				RollBackVariables vars = new RollBackVariables(ProcessQueuesHandler.KEY_ROLLBACK_LANDING, true);
+				vars.setValue(ProcessQueuesHandler.KEY_ROLLBACK_TIME, eNew.getTimeStamp());
+				e.setRollBackVariable(vars);
+				e.setAirCraft(ac);
 			}
 		}
 	}
 
 	@Override
 	public void rollback(Event e, EventScheduler scheduler) {
-		// TODO Auto-generated method stub
+		RollBackVariables vars = e.getRollBackVariable();
 
+		// if no vars were stored, no event has been created
+		if (vars == null)
+			return;
+
+		final Airport ap = e.getAirPort();
+
+		if (vars.getBooleanValue(ProcessQueuesHandler.KEY_ROLLBACK_LANDING)) { // rollback the landing
+			final Aircraft ac = e.getAirCraft();
+			Event eNew = new Event(Event.START_LANDING, vars.getLongValue(KEY_ROLLBACK_TIME), ap, ac);
+			scheduler.scheduleEvent(eNew);
+			ap.setRunWayFree(true);
+			ap.addFirstToHoldingQueue(ac);
+			
+		} else { // rollback the takeoff
+			final Aircraft ac = e.getAirCraft();
+			Event eNew = new Event(Event.START_TAKE_OFF, vars.getLongValue(KEY_ROLLBACK_TIME), ap, ac);
+			scheduler.scheduleEvent(eNew);
+			ap.setRunWayFree(true);
+			ap.addFirstToStartQueue(ac);
+		}
 	}
 
 }

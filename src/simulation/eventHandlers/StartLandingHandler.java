@@ -9,7 +9,7 @@ import simulation.model.RollBackVariables;
 
 public class StartLandingHandler implements TransactionalEventHandler {
 
-	
+	private static final String ROLLBACK_VAR_KEY = "LAST_TIME";
 	
 	@Override
 	public void process(Event e, EventScheduler scheduler) {
@@ -18,7 +18,7 @@ public class StartLandingHandler implements TransactionalEventHandler {
 		ac.setState(Aircraft.LANDING);
 		ac.setLastX(ap.getX2());
 		ac.setLastY(ap.getY2());
-		e.setRollBackVariable(new RollBackVariables( ac.getLastTime()));
+		e.setRollBackVariable(new RollBackVariables(StartLandingHandler.ROLLBACK_VAR_KEY, ac.getLastTime()));
 		ac.setLastTime(e.getTimeStamp());
 		// we assume that the aircraft is landing with a constant negative
 		// acceleration
@@ -37,7 +37,7 @@ public class StartLandingHandler implements TransactionalEventHandler {
 		ac.setState(Aircraft.ON_HOLDING_LOOP);
 		ac.setLastX(ap.getX2());
 		ac.setLastY(ap.getY2());
-		ac.setLastTime(e.getRollBackVariable().getLastEventTimeStamp());
+		ac.setLastTime(e.getRollBackVariable().getLongValue(StartLandingHandler.ROLLBACK_VAR_KEY));
 
 		
 		long landingDuration = (long) (2 * ap.getRunwayLength() / Aircraft.MAX_SPEED);
