@@ -165,7 +165,15 @@ public class Simulator implements EventScheduler {
 			insertEvent(e);
 		}
 		e = getNextEvent();
-		if (e == null)	throw new RuntimeException("Event was null!");
+		if (e == null)	{
+			// for debugging purpose, show the anti messages in evList
+			System.out.println("event list size: " + evList.size());
+			System.out.println("events:");
+			for (Event ev : evList) {
+				System.out.println(ev);
+			}
+			throw new RuntimeException("Event was null!");
+		}
 		if(clock.isInPast(e.getTimeStamp())) throw new RuntimeException("event is in past");
 		if (e.getTimeStamp() > clock.currentSimulationTime()) {
 			clock.sleepUntil(e.getTimeStamp());
