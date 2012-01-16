@@ -40,7 +40,7 @@ public class StartTakeOffHandler implements TransactionalEventHandler {
 		
 		//rollback airplane state
 		ac.setState(Event.READY_FOR_DEPARTURE);
-		ac.setLastTime(e.getRollBackVariable().getLastEventTimeStamp());
+		ac.setLastTime(e.getRollBackVariable().getLongValue());
 		
 		//remove event from event List
 		Event endTakeOffEvent = new Event(Event.END_TAKE_OFF, e.getTimeStamp(), ap, ac);
