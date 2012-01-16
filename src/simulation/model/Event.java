@@ -1,7 +1,5 @@
 package simulation.model;
 
-import simulation.definition.EventHandler;
-
 public class Event {
 	// Event - Types
 	public static final int READY_FOR_DEPARTURE = 0;
@@ -10,8 +8,9 @@ public class Event {
 	public static final int ARRIVAL = 3;
 	public static final int START_LANDING = 4;
 	public static final int END_LANDING = 5;
-	public static final int ENTER_START_QUEUE = 6;
-	public static final int ENTER_LANDING_QUEUE = 7;
+	// never used
+	// public static final int ENTER_START_QUEUE = 6;
+	// public static final int ENTER_LANDING_QUEUE = 7;
 	public static final int PROCESS_QUEUES = 8;
 	public static final int ADD_TO_ANIMATION = 9;
 	public static final int REMOVE_FROM_ANIMATION = 10;
@@ -19,15 +18,12 @@ public class Event {
 	public static final int LEAVE_AIRSPACE = 12;
 	public static final int ENTER_AIRSPACE = 13;
 
-	public String[] typeStrings = { "READY_FOR_DEPARTURE", "START_TAKE_OFF",
-			"END_TAKE_OFF", "ARRIVAL", "START_LANDING", "END_LANDING",
-			"ENTER_START_QUEUE", "ENTER_LANDING_QUEUE", "PROCESS_QUEUES",
-			"ADD_TO_ANIMATION", "REMOVE_FROM_ANIMATION", "REPAINT_ANIMATION",
-			"LEAVE_AIRSPACE", "ENTER_AIRSPACE" };
+	public String[] typeStrings = { "READY_FOR_DEPARTURE", "START_TAKE_OFF", "END_TAKE_OFF", "ARRIVAL",
+			"START_LANDING", "END_LANDING", "ENTER_START_QUEUE", "ENTER_LANDING_QUEUE", "PROCESS_QUEUES",
+			"ADD_TO_ANIMATION", "REMOVE_FROM_ANIMATION", "REPAINT_ANIMATION", "LEAVE_AIRSPACE", "ENTER_AIRSPACE" };
 
 	private long timeStamp;
 	private int type;
-	private EventHandler eventHandler;
 	private Airport airPort;
 	private Aircraft airCraft;
 	private boolean isAntiMessage;
@@ -48,13 +44,8 @@ public class Event {
 		this.airCraft = airCraft;
 	}
 
-	public EventHandler getEventHandler() {
-		return eventHandler;
-	}
-
-	public Event(int type, EventHandler h, long time, Airport ap, Aircraft ac) {
+	public Event(int type, long time, Airport ap, Aircraft ac) {
 		this.type = type;
-		eventHandler = h;
 		timeStamp = time;
 		airPort = ap;
 		airCraft = ac;
@@ -93,10 +84,10 @@ public class Event {
 			return;
 		else if (type == END_LANDING)
 			return;
-		else if (type == ENTER_START_QUEUE)
-			return;
-		else if (type == ENTER_LANDING_QUEUE)
-			return;
+		// else if (type == ENTER_START_QUEUE)
+		// return;
+		// else if (type == ENTER_LANDING_QUEUE)
+		// return;
 		else if (type == PROCESS_QUEUES)
 			return;
 		else
@@ -106,14 +97,7 @@ public class Event {
 	@Override
 	public String toString() {
 
-		String s = "Event " + "T=" + timeStamp + " " + typeStrings[type]
-				+ ", eventHandler=";
-		if (eventHandler instanceof Aircraft)
-			s = s + " Aircraft " + ((Aircraft) eventHandler).getName();
-		else if (eventHandler instanceof Airport)
-			s = s + " Airport " + ((Airport) eventHandler).getName();
-		else
-			s = s + " OTHER " + eventHandler;
+		String s = "Event " + "T=" + timeStamp + " " + typeStrings[type];
 		s = s + ", ap: ";
 		if (airPort != null)
 			s = s + airPort.getName();
@@ -132,8 +116,7 @@ public class Event {
 	public int hashCode() {
 		final int prime = 31;
 		int result = 1;
-		result = prime * result
-				+ ((airCraft == null) ? 0 : airCraft.hashCode());
+		result = prime * result + ((airCraft == null) ? 0 : airCraft.hashCode());
 		result = prime * result + ((airPort == null) ? 0 : airPort.hashCode());
 		result = prime * result + (int) (timeStamp ^ (timeStamp >>> 32));
 		result = prime * result + type;
@@ -165,6 +148,5 @@ public class Event {
 			return false;
 		return true;
 	}
-	
-	
+
 }

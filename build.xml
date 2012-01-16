@@ -23,7 +23,7 @@
 	<target name="createRunnables" depends="create_xferfiles_manifest, create_run_jar" />
 	<target name="runMPI" depends="createRunnables">
 		<exec executable="p2pmpirun">
-			<arg value="-n 2" />
+			<arg value="-n 4" />
 			<arg value="-l xferfiles" />
 			<arg value="simulation/MPIProgram" />
 		</exec>
