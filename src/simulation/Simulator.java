@@ -7,6 +7,8 @@ import java.util.Map;
 import java.util.Random;
 import java.util.Vector;
 
+import p2pmpi.mpi.MPI;
+
 import simulation.communication.Communication;
 import simulation.communication.Message;
 import simulation.definition.EventScheduler;
@@ -231,7 +233,7 @@ public class Simulator implements EventScheduler {
 		for (int i = 0; i < amountOfFlights; i++) {
 			// Random Airport:
 			Airport ap = world.getAirport(airportNames[rand.nextInt(airportNames.length)]);
-			Aircraft ac = new Aircraft("X" + 1000 + i, ap);
+			Aircraft ac = new Aircraft("X" + MPI.COMM_WORLD.Rank() +"000" + i, ap);
 
 			// add the aircraft only to the wolrd where its base airport is.
 			if (ap.getAirportId() % getTotalProcessors() == getIdOfProcessor()) {
