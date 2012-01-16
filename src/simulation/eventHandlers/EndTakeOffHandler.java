@@ -5,6 +5,7 @@ import simulation.definition.TransactionalEventHandler;
 import simulation.model.Aircraft;
 import simulation.model.Airport;
 import simulation.model.Event;
+import simulation.model.RollBackVariables;
 
 public class EndTakeOffHandler implements TransactionalEventHandler {
 
@@ -15,12 +16,14 @@ public class EndTakeOffHandler implements TransactionalEventHandler {
 		ac.setState(Aircraft.ON_FLIGHT);
 		ac.setLastX(ap.getX2());
 		ac.setLastY(ap.getY2());
+		long lastTime = ac.getLastTime();
 		ac.setLastTime(e.getTimeStamp());
 		ap.setRunWayFree(true);
 		ap.unsubscribeAircraft(ac);
 		long duration = (long) (ap.getDistanceTo(ac.getDestination()) / Aircraft.MAX_SPEED);
 
 		Event e1 = new Event(Event.LEAVE_AIRSPACE, e.getTimeStamp() + duration / 2, ac.getOrigin(), ac);
+		e1.setRollBackVariable(new RollBackVariables(lastTime));
 		scheduler.scheduleEvent(e1);
 		Event e2 = new Event(Event.PROCESS_QUEUES, e.getTimeStamp(), ap, null);
 		scheduler.scheduleEvent(e2);
