@@ -18,14 +18,13 @@ public class StartLandingHandler implements TransactionalEventHandler {
 		ac.setState(Aircraft.LANDING);
 		ac.setLastX(ap.getX2());
 		ac.setLastY(ap.getY2());
-		long lastTime = ac.getLastTime();
+		e.setRollBackVariable(new RollBackVariables( ac.getLastTime()));
 		ac.setLastTime(e.getTimeStamp());
 		// we assume that the aircraft is landing with a constant negative
 		// acceleration
 		long landingDuration = (long) (2 * ap.getRunwayLength() / Aircraft.MAX_SPEED);
 		
 		Event eNew = new Event(Event.END_LANDING, e.getTimeStamp() + landingDuration, ap, ac);
-		eNew.setRollBackVariable(new RollBackVariables(lastTime));
 		scheduler.scheduleEvent(eNew);
 		Event e3 = new Event(Event.REMOVE_FROM_ANIMATION, e.getTimeStamp(), null, ac);
 		scheduler.scheduleEvent(e3);
