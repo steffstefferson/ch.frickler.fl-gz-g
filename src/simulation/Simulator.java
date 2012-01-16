@@ -95,7 +95,7 @@ public class Simulator implements EventScheduler {
 			// handle event locally
 			insertEvent(e);
 			if (evList.size() <= 1) {
-				Event eNew = new Event(Event.REPAINT_ANIMATION, e.getTimeStamp() + Clock.REPAINT_GAP, null, null);
+				Event eNew = new Event(Event.REPAINT_ANIMATION, clock.currentSimulationTime() + Clock.REPAINT_GAP, null, null);
 				scheduleEvent(eNew);
 
 				logGui.println("Start paint animation" + e.toString());
@@ -165,8 +165,10 @@ public class Simulator implements EventScheduler {
 			insertEvent(e);
 		}
 		e = getNextEvent();
-		if (e == null)	throw new RuntimeException("Event was null!");
-		if(clock.isInPast(e.getTimeStamp())) throw new RuntimeException("event is in past");
+		if (e == null)
+			throw new RuntimeException("Event was null!");
+		if (clock.isInPast(e.getTimeStamp()))
+			throw new RuntimeException("event is in past");
 		if (e.getTimeStamp() > clock.currentSimulationTime()) {
 			clock.sleepUntil(e.getTimeStamp());
 		}
@@ -255,6 +257,7 @@ public class Simulator implements EventScheduler {
 		// schedule initial events
 		// for (int i = 0; i < amountOfFlights; i++) {
 
+		// Start
 		for (String key : world.getAircrafts().keySet()) {
 			Aircraft ac = world.getAircrafts().get(key);
 			// Aircraft ac = world.getAircraft("X"+1000+i);
