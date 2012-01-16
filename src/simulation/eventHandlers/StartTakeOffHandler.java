@@ -20,6 +20,7 @@ public class StartTakeOffHandler implements TransactionalEventHandler {
 		ac.setState(Aircraft.TAKING_OFF);
 		ac.setLastTime(e.getTimeStamp());
 		RollBackVariables rv = new RollBackVariables(StartTakeOffHandler.KEY_LAST_TIME, e.getTimeStamp());
+		e.setRollBackVariable(rv);
 		// we assume a constant acceleration maxAcceleration
 		long takeOffDuration = Aircraft.MAX_SPEED / Aircraft.MAX_ACCEL;
 		// distance for the accelerating part:
