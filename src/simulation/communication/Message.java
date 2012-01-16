@@ -4,7 +4,6 @@ import java.io.Serializable;
 import java.util.Arrays;
 import java.util.List;
 
-import simulation.definition.EventHandler;
 import simulation.model.Aircraft;
 import simulation.model.Airport;
 import simulation.model.Event;
@@ -44,9 +43,9 @@ public class Message implements Serializable {
 		}
 	}
 
-	public Event getEvent(SimWorld world, EventHandler eh) {
+	public Event getEvent(SimWorld world) {
 		Airport ap = world.getAirport(destination);
-		return new Event(eventType, eh, timeStamp, ap, getAircraft(world));
+		return new Event(eventType, timeStamp, ap, getAircraft(world));
 	}
 
 	private Aircraft getAircraft(SimWorld world) {
