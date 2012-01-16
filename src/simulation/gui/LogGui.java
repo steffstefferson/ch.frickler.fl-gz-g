@@ -28,6 +28,8 @@ public class LogGui extends JFrame {
 		jtaDebug.setAutoscrolls(true);
 		JScrollPane jsp = new JScrollPane(jtaDebug);
 		
+		this.setTitle("ProcessId: " + sim.getIdOfProcessor() + " isMaster: " + sim.isMaster());
+		
 		// Scrolls as long as you don't klick inside the textarea
 		DefaultCaret caret = (DefaultCaret)jtaDebug.getCaret();
 		caret.setUpdatePolicy(DefaultCaret.ALWAYS_UPDATE);
