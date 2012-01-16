@@ -170,7 +170,7 @@ public class Simulator implements EventScheduler {
 
 		if (e == null)	{
 			// for debugging purpose, show the anti messages in evList
-			System.out.println("event list size: " + evList.size());
+			System.out.println(getIdOfProcessor()+": event list size: " + evList.size());
 			System.out.println("events:");
 			for (Event ev : evList) {
 				System.out.println(ev);
@@ -233,7 +233,7 @@ public class Simulator implements EventScheduler {
 		for (int i = 0; i < amountOfFlights; i++) {
 			// Random Airport:
 			Airport ap = world.getAirport(airportNames[rand.nextInt(airportNames.length)]);
-			Aircraft ac = new Aircraft("X" + MPI.COMM_WORLD.Rank() +"000" + i, ap);
+			Aircraft ac = new Aircraft("X" + getIdOfProcessor() +"000" + i, ap);
 
 			// add the aircraft only to the wolrd where its base airport is.
 			if (ap.getAirportId() % getTotalProcessors() == getIdOfProcessor()) {
