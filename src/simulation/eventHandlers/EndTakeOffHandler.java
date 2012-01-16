@@ -9,6 +9,8 @@ import simulation.model.RollBackVariables;
 
 public class EndTakeOffHandler implements TransactionalEventHandler {
 
+	private static final String ROLLBACK_VAR_KEY = "LAST_TIME";
+	
 	@Override
 	public void process(Event e, EventScheduler scheduler) {
 		final Aircraft ac = e.getAirCraft();
@@ -16,7 +18,7 @@ public class EndTakeOffHandler implements TransactionalEventHandler {
 		ac.setState(Aircraft.ON_FLIGHT);
 		ac.setLastX(ap.getX2());
 		ac.setLastY(ap.getY2());
-		e.setRollBackVariable(new RollBackVariables<Long>(ac.getLastTime()));
+		e.setRollBackVariable(new RollBackVariables(EndTakeOffHandler.ROLLBACK_VAR_KEY,ac.getLastTime()));
 		ac.setLastTime(e.getTimeStamp());
 		ap.setRunWayFree(true);
 		ap.unsubscribeAircraft(ac);
@@ -38,7 +40,7 @@ public class EndTakeOffHandler implements TransactionalEventHandler {
 		ac.setState(Aircraft.TAKING_OFF);
 		ac.setLastX(ap.getX1());
 		ac.setLastY(ap.getY1());
-		ac.setLastTime(e.getRollBackVariable().getLongValue());
+		ac.setLastTime(e.getRollBackVariable().getLongValue(EndTakeOffHandler.ROLLBACK_VAR_KEY));
 		ap.setRunWayFree(false);
 		ap.subscribeAircraft(ac);
 

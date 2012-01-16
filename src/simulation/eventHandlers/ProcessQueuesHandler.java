@@ -5,6 +5,7 @@ import simulation.definition.TransactionalEventHandler;
 import simulation.model.Aircraft;
 import simulation.model.Airport;
 import simulation.model.Event;
+import simulation.model.RollBackVariables;
 
 public class ProcessQueuesHandler implements TransactionalEventHandler {
 
@@ -24,21 +25,41 @@ public class ProcessQueuesHandler implements TransactionalEventHandler {
 				Event eNew = new Event(Event.START_LANDING, time, ap, ac);
 				scheduler.scheduleEvent(eNew);
 				ap.setRunWayFree(false);
+				// tell this event, that we created a start_landing event
+				e.setRollBackVariable(new RollBackVariables<Object[]>(new Object[] { true, time }));
+				e.setAirCraft(ac);
 
 			} else if (ap.getWaitingForTakeOffQueue().size() > 0) {
 				final Aircraft ac = ap.removeFirstFromStartQueue();
 				Event eNew = new Event(Event.START_TAKE_OFF, e.getTimeStamp(), ap, ac);
 				scheduler.scheduleEvent(eNew);
 				ap.setRunWayFree(false);
-
+				e.setRollBackVariable(new RollBackVariables<Object[]>(new Object[] { false, e.getTimeStamp() }));
+				e.setAirCraft(ac);
 			}
 		}
 	}
 
 	@Override
 	public void rollback(Event e, EventScheduler scheduler) {
-		// TODO Auto-generated method stub
+		RollBackVariables<Boolean> vars = e.getRollBackVariable();
 
+		// if no vars were stored, no event has been created
+		if (vars == null)
+			return;
+
+		final Airport ap = e.getAirPort();
+
+		if (vars.getValue()[0]) { // rollback the landing
+
+		} else { // rollback the takeoff
+			final Aircraft ac = e.getAirCraft();
+			Event eNew = new Event(Event.START_TAKE_OFF, e.getTimeStamp(), ap, ac);
+			scheduler.scheduleEvent(eNew);
+			ap.setRunWayFree(false);
+			e.setRollBackVariable(new RollBackVariables<Boolean>(false));
+			e.setAirCraft(ac);
+		}
 	}
 
 }

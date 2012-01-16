@@ -1,14 +1,18 @@
 package simulation.model;
 
-public class RollBackVariables<K> {
+import java.util.HashMap;
+import java.util.Map;
 
-	private K value = null;
+public class RollBackVariables{
 
-	public RollBackVariables(K value) {
-		this.value = value;
+	private Map<String, Object> values = new HashMap<String, Object>();
+
+	public RollBackVariables(String key, Object value) {
+		values.put(key, value);
 	}
 
-	public K getValue() {
+	public Object getValue(String key) {
+		Object value = values.get(key);
 		if (value == null)
 			throw new RuntimeException("value not set");
 		return value;
@@ -18,13 +22,18 @@ public class RollBackVariables<K> {
 	 * 
 	 * @return the stored value as a long
 	 */
-	public long getLongValue() {
-		Long l = (Long) getValue();
+	public long getLongValue(String key) {
+		Long l = (Long) getValue(key);
 		return l;
 	}
 
-	public void setValue(K value) {
-		this.value = value;
+	public boolean getBooleanValue(String key){
+		Boolean b = (Boolean) getValue(key);
+		return b;
+	}
+	
+	public void setValue(String key, Object value) {
+		this.values.put(key, value);
 	}
 
 }
