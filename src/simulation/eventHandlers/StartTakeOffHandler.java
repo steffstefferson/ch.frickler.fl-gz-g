@@ -5,13 +5,21 @@ import simulation.definition.TransactionalEventHandler;
 import simulation.model.Aircraft;
 import simulation.model.Airport;
 import simulation.model.Event;
+import simulation.model.RollBackVariables;
 
 public class StartTakeOffHandler implements TransactionalEventHandler {
 
+	private final static String KEY_LASTTIME = "LAST_TIME";
+	private final static String KEY_TIMESTAMP = "TIMESTAMP";
+	
 	@Override
 	public void process(Event e, EventScheduler scheduler) {
 		final Aircraft ac = e.getAirCraft();
 		final Airport ap = e.getAirPort();
+		
+		// set the current last time for futur rollback
+		e.setRollBackVariable(new RollBackVariables<Long>(ac.getLastTime()));
+		
 		ac.setState(Aircraft.TAKING_OFF);
 		ac.setLastTime(e.getTimeStamp());
 		// we assume a constant acceleration maxAcceleration
@@ -27,10 +35,14 @@ public class StartTakeOffHandler implements TransactionalEventHandler {
 		} else {
 			throw new RuntimeException("runway too short!!");
 		}
+		
+		
+		
 		// schedule next event
 		Event eNew = new Event(Event.END_TAKE_OFF, e.getTimeStamp()
 				+ takeOffDuration, ap, ac); // to do!
 		scheduler.scheduleEvent(eNew);
+		
 	}
 
 	@Override
@@ -43,7 +55,7 @@ public class StartTakeOffHandler implements TransactionalEventHandler {
 		ac.setLastTime(e.getRollBackVariable().getLongValue());
 		
 		//remove event from event List
-		Event endTakeOffEvent = new Event(Event.END_TAKE_OFF, e.getTimeStamp(), ap, ac);
+		Event endTakeOffEvent = new Event(Event.END_TAKE_OFF, e.getRollBackVariable().getLongValue(), ap, ac);
 		endTakeOffEvent.setAntiMessage(true);
 		scheduler.scheduleEvent(endTakeOffEvent);
 	}
