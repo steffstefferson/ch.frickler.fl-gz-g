@@ -75,6 +75,10 @@ public class Airport {
 		waitingForTakeOffQueue.addLast(ac);
 	}
 
+	public void addFirstToStartQueue(Aircraft ac) {
+		waitingForTakeOffQueue.addFirst(ac);
+	}
+	
 	public void removeFromStartQueue(Aircraft ac) {
 		waitingForTakeOffQueue.remove(ac);
 	}
@@ -89,6 +93,10 @@ public class Airport {
 		waitingForLandingQueue.addLast(ac);
 	}
 
+	public void addFirstToHoldingQueue(Aircraft ac) {
+		waitingForLandingQueue.addFirst(ac);
+	}
+	
 	public Aircraft removeNextFromHoldingQueue() {
 		if (waitingForLandingQueue.size() < 1)
 			throw new RuntimeException("No aircrafts in waiting queue");
