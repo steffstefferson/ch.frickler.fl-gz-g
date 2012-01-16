@@ -3,13 +3,16 @@ package simulation.gui;
 import java.awt.Color;
 import java.awt.Graphics;
 import java.awt.HeadlessException;
+import java.awt.Image;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Set;
 
+import javax.swing.ImageIcon;
 import javax.swing.JFrame;
+import javax.swing.JPanel;
 
 import simulation.Simulator;
 import simulation.logic.Clock;
@@ -20,8 +23,8 @@ import simulation.model.SimWorld;
 public class Animation extends JFrame implements ActionListener {
 
 	/**
-	 * 
-	 */
+    *
+    */
 	private static final long serialVersionUID = 1L;
 
 	private static final int BOARDER = 160;
@@ -35,6 +38,8 @@ public class Animation extends JFrame implements ActionListener {
 	private Simulator sim;
 	private Clock clock;
 	private static Animation animation;
+	private ImagePanel imagePanel;
+	private AirportPanel airportPanel;
 
 	public static Animation init(Simulator sim, Clock c) {
 		animation = new Animation(sim, c);
@@ -43,6 +48,7 @@ public class Animation extends JFrame implements ActionListener {
 
 	public static Animation getInstance() {
 		return animation;
+
 	}
 
 	private Animation(Simulator sim, Clock c) throws HeadlessException {
@@ -57,62 +63,11 @@ public class Animation extends JFrame implements ActionListener {
 		setBounds(0, 0, 1024, 768);
 		setLayout(null);
 
-	}
+		airportPanel = new AirportPanel();
+		imagePanel = new ImagePanel("res/swiss.jpg");
+		this.getContentPane().add(airportPanel);
+		this.getContentPane().add(imagePanel);
 
-	public void paint(Graphics g) {
-		try {
-			super.paint(g); // this causes the flackering
-			printAirports(g);
-			printAircrafts(g);
-		} catch (Exception ex) {
-			// catch the ConcurrentModificationException
-		}
-	}
-
-	private void printAirports(Graphics g) {
-		SimWorld world = sim.getSimWorld();
-		HashMap<String, Airport> aps = world.getAirports();
-		for (String s : aps.keySet()) {
-			Airport a = aps.get(s);
-
-			int flughafenX = getXonMap(a.getX1());
-			int flughafenY = getYonMap(a.getY1());
-			g.setColor(Color.BLACK);
-			g.drawString(s, flughafenX + 10, flughafenY - 10);
-
-			int[] x = new int[] { flughafenX, getXonMap(a.getX2()) };
-			int[] y = new int[] { flughafenY, getYonMap(a.getY2()) };
-			g.drawPolygon(x, y, x.length);
-
-			g.setColor(a.getColor());
-			/* don't show the airspace area
-			Dimension dim = a.getControlarea();
-			int xArea = getXonMap(a.getX1()-dim.getWidth());
-			int yArea = getYonMap(a.getY1()-dim.getHeight());
-			
-			int xArea1 = getXonMap(a.getX1()+dim.getWidth());
-			int yArea1 = getYonMap(a.getY1()+dim.getHeight());
-			// airspace
-			g.drawRect(xArea,yArea1,xArea1-xArea,yArea-yArea1);
-			*/
-
-
-		}
-
-	}
-
-	private void printAircrafts(Graphics g) {
-		for (Aircraft ac : aircraftList) {
-
-			ac.calcPosition(clock.currentSimulationTime());
-
-			int x = getXonMap(ac.getLastX());
-			int y = getYonMap(ac.getLastY());
-
-			g.setColor(Color.RED);
-			g.fillOval(x, y, 5, 5);
-
-		}
 	}
 
 	/**
@@ -155,7 +110,98 @@ public class Animation extends JFrame implements ActionListener {
 
 	@Override
 	public void actionPerformed(ActionEvent e) {
+
 		this.repaint();
+		imagePanel.repaint();
+	}
+
+	public void repaintAircrafts() {
+		airportPanel.repaint();
+	}
+
+	private class AirportPanel extends JPanel {
+
+		public AirportPanel() {
+			this.setSize(Animation.this.getSize());
+			setLayout(null);
+			setVisible(true);
+			setOpaque(false);
+		}
+
+		public void paint(Graphics g) {
+			try {
+				super.paint(g); // this causes the flackering
+				printAircrafts(g);
+				// printAircrafts(g);
+			} catch (Exception ex) {
+				// catch the ConcurrentModificationException
+			}
+		}
+
+		private void printAircrafts(Graphics g) {
+			for (Aircraft ac : aircraftList) {
+
+				ac.calcPosition(clock.currentSimulationTime());
+
+				int x = getXonMap(ac.getLastX());
+				int y = getYonMap(ac.getLastY());
+
+				g.setColor(Color.RED);
+				g.fillOval(x, y, 5, 5);
+
+			}
+
+		}
+
+	}
+
+	private class ImagePanel extends JPanel {
+
+		private Image img;
+
+		public ImagePanel(String path) {
+
+			java.net.URL url = Animation.class.getResource(path);
+			if (url == null) {
+				System.out.println("Null");
+			}
+			img = new ImageIcon(url, "Switzerland").getImage();
+
+			setSize(Animation.this.getSize());
+			setLayout(null);
+
+			setSize(Animation.this.getSize());
+			setLayout(null);
+		}
+
+		public void paintComponent(Graphics g) {
+
+			this.setSize(Animation.this.getWidth(), Animation.this.getHeight());
+			g.drawImage(img, 0, 0, Animation.this.getWidth(), Animation.this.getHeight(), this);
+			printAirports(g);
+		}
+
+		private void printAirports(Graphics g) {
+			SimWorld world = sim.getSimWorld();
+			HashMap<String, Airport> aps = world.getAirports();
+			for (String s : aps.keySet()) {
+				Airport a = aps.get(s);
+
+				int flughafenX = getXonMap(a.getX1());
+				int flughafenY = getYonMap(a.getY1());
+				g.setColor(Color.BLUE);
+				// g.drawString(s, flughafenX + 10, flughafenY - 10);
+
+				int[] x = new int[] { flughafenX, getXonMap(a.getX2()) };
+				int[] y = new int[] { flughafenY, getYonMap(a.getY2()) };
+				g.drawPolygon(x, y, x.length);
+
+				// g.setColor(a.getColor());
+
+			}
+
+		}
+
 	}
 
 }

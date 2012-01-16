@@ -282,14 +282,14 @@ public class Simulator implements EventScheduler {
 	private void initAirports() {
 		// create airports
 
-		Airport ap = new Airport("ZURICH", 684000, 256000, 683000, 259000, 60000, 45000);
+		Airport ap = new Airport("ZURICH", 664000, 266000, 663000, 269000, 60000, 45000);
 		world.addAirport(ap);
-		ap = new Airport("GENF", 497000, 120000, 499000, 122000, 50000, 100000);
+		ap = new Airport("GENF", 487000, 120000, 489000, 122000, 50000, 100000);
 		world.addAirport(ap);
-		ap = new Airport("BASEL", 599000, 287000, 601000, 288000, 40000, 45000);
+		ap = new Airport("BASEL", 592000, 287000, 593000, 288000, 40000, 45000);
 		world.addAirport(ap);
 
-		ap = new Airport("BERNE", 550000, 207000, 552000, 208000, 40000, 100000);
+		ap = new Airport("BERNE", 585000, 207000, 587000, 208000, 40000, 100000);
 		world.addAirport(ap);
 
 	}
