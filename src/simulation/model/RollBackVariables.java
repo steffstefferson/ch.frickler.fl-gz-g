@@ -1,22 +1,29 @@
 package simulation.model;
 
-import javax.management.RuntimeErrorException;
+public class RollBackVariables<K> {
 
-public class RollBackVariables {
+	private K value = null;
 
-	private long lastEventTimeStamp;
-
-	public RollBackVariables(long timeStamp) {
-		this.lastEventTimeStamp = timeStamp;
+	public RollBackVariables(K value) {
 	}
 
-	public long getLastEventTimeStamp() {
-		if(lastEventTimeStamp == 0) throw new RuntimeException("lastEventTimeStamp not set");
-		return lastEventTimeStamp;
+	public K getValue() {
+		if (value == null)
+			throw new RuntimeException("value not set");
+		return value;
 	}
 
-	public void setLastEventTimeStamp(long lastEventTimeStamp) {
-		this.lastEventTimeStamp = lastEventTimeStamp;
+	/**
+	 * 
+	 * @return the stored value as a long
+	 */
+	public long getLongValue() {
+		Long l = (Long) getValue();
+		return l;
 	}
-	
+
+	public void setValue(K value) {
+		this.value = value;
+	}
+
 }

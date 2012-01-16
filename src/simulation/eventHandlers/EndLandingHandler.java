@@ -17,7 +17,7 @@ public class EndLandingHandler implements TransactionalEventHandler {
 		ac.setState(Aircraft.ON_GROUND);
 		ac.setLastX(ap.getX1());
 		ac.setLastY(ap.getY1());
-		e.setRollBackVariable(new RollBackVariables(ac.getLastTime()));
+		e.setRollBackVariable(new RollBackVariables<Long>(ac.getLastTime()));
 		ac.setLastTime(e.getTimeStamp());
 		ap.setRunWayFree(true);
 		// do we have another flight?
@@ -38,7 +38,7 @@ public class EndLandingHandler implements TransactionalEventHandler {
 		ac.setState(Aircraft.LANDING);
 		ac.setLastX(ap.getX2());
 		ac.setLastY(ap.getY2());
-		ac.setLastTime(e.getRollBackVariable().getLastEventTimeStamp());
+		ac.setLastTime(e.getRollBackVariable().getLongValue());
 		ap.setRunWayFree(false);
 		Flight f = ac.getFlightPlan().getPreviousFlight();
 		if (!ac.getDestination().equals(ap) && f != null) {
