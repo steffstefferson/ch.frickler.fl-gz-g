@@ -94,12 +94,13 @@ public class Simulator implements EventScheduler {
 		} else {
 			// handle event locally
 			insertEvent(e);
-			if (evList.size() <= 1) {
-				Event eNew = new Event(Event.REPAINT_ANIMATION, e.getTimeStamp() + Clock.REPAINT_GAP, null, null);
-				scheduleEvent(eNew);
-
-				logGui.println("Start paint animation" + e.toString());
-			}
+			// if (evList.size() <= 1) {
+			// Event eNew = new Event(Event.REPAINT_ANIMATION, e.getTimeStamp()
+			// + Clock.REPAINT_GAP, null, null);
+			// scheduleEvent(eNew);
+			//
+			// logGui.println("Start paint animation" + e.toString());
+			// }
 
 			if (clock.isInPast(e.getTimeStamp())) {
 				throw new RuntimeException("Causality error: " + e + "tim: " + e.getTimeStamp()
@@ -165,8 +166,17 @@ public class Simulator implements EventScheduler {
 			insertEvent(e);
 		}
 		e = getNextEvent();
-		if (e == null)	throw new RuntimeException("Event was null!");
-		if(clock.isInPast(e.getTimeStamp())) throw new RuntimeException("event is in past");
+		if (e == null) {
+			try {
+				Thread.sleep(10);
+			} catch (InterruptedException e1) {
+				// TODO Auto-generated catch block
+				e1.printStackTrace();
+			}
+			return;
+		}
+		if (clock.isInPast(e.getTimeStamp()))
+			throw new RuntimeException("event is in past");
 		if (e.getTimeStamp() > clock.currentSimulationTime()) {
 			clock.sleepUntil(e.getTimeStamp());
 		}
@@ -199,11 +209,12 @@ public class Simulator implements EventScheduler {
 	 */
 	public void runSimulation() {
 		int evCnt = 0;
-		while (evList.size() > 0) {
+		// while (evList.size() > 0) {
+		while (true) {
 			processNextEvent();
 			evCnt++;
 		}
-		logGui.println("Processed " + evCnt + " events.");
+		// logGui.println("Processed " + evCnt + " events.");
 	}
 
 	public void initWorld() {

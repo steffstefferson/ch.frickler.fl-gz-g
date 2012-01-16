@@ -8,6 +8,8 @@ import java.awt.event.ActionListener;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.Timer;
+import java.util.TimerTask;
 
 import javax.swing.JFrame;
 
@@ -38,6 +40,16 @@ public class Animation extends JFrame implements ActionListener {
 
 	public static Animation init(Simulator sim, Clock c) {
 		animation = new Animation(sim, c);
+		TimerTask repaintTimerTask = new TimerTask() {
+
+			public void run() {
+				Animation.getInstance().repaint();
+			}
+		};
+
+		Timer repaintTimer = new Timer(true);
+		repaintTimer.scheduleAtFixedRate(repaintTimerTask, 0, Clock.REPAINT_GAP);
+
 		return animation;
 	}
 
@@ -85,17 +97,15 @@ public class Animation extends JFrame implements ActionListener {
 			g.drawPolygon(x, y, x.length);
 
 			g.setColor(a.getColor());
-			/* don't show the airspace area
-			Dimension dim = a.getControlarea();
-			int xArea = getXonMap(a.getX1()-dim.getWidth());
-			int yArea = getYonMap(a.getY1()-dim.getHeight());
-			
-			int xArea1 = getXonMap(a.getX1()+dim.getWidth());
-			int yArea1 = getYonMap(a.getY1()+dim.getHeight());
-			// airspace
-			g.drawRect(xArea,yArea1,xArea1-xArea,yArea-yArea1);
-			*/
-
+			/*
+			 * don't show the airspace area Dimension dim = a.getControlarea();
+			 * int xArea = getXonMap(a.getX1()-dim.getWidth()); int yArea =
+			 * getYonMap(a.getY1()-dim.getHeight());
+			 * 
+			 * int xArea1 = getXonMap(a.getX1()+dim.getWidth()); int yArea1 =
+			 * getYonMap(a.getY1()+dim.getHeight()); // airspace
+			 * g.drawRect(xArea,yArea1,xArea1-xArea,yArea-yArea1);
+			 */
 
 		}
 

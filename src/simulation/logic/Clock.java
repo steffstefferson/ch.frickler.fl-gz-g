@@ -4,9 +4,9 @@ public class Clock {
 
 	private long currentSimulationTime = 0;
 
-	public static final long REPAINT_GAP = 80;
+	public static final long REPAINT_GAP = 50;
 
-	private static final int SCALE_FACTOR = 300;
+	private static final int SCALE_FACTOR = 1000;
 
 	public long currentSimulationTime() {
 		return currentSimulationTime;
