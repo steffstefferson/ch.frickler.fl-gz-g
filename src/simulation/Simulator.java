@@ -7,6 +7,8 @@ import java.util.Map;
 import java.util.Random;
 import java.util.Vector;
 
+import org.junit.Assert;
+
 import simulation.communication.Communication;
 import simulation.communication.Message;
 import simulation.definition.EventScheduler;
@@ -114,11 +116,10 @@ public class Simulator implements EventScheduler {
 				logGui.println("Start paint animation" + e.toString());
 			}
 
-			// if (clock.isInPast(e.getTimeStamp())) {
-			// throw new RuntimeException("Causality error: " + e + "tim: " +
-			// e.getTimeStamp()
-			// + " currentSimulationTime" + clock.currentSimulationTime());
-			// }
+			if (clock.isInPast(e.getTimeStamp())) {
+				throw new RuntimeException("Causality error: " + e + "tim: " + e.getTimeStamp()
+						+ " currentSimulationTime" + clock.currentSimulationTime());
+			}
 
 		}
 
@@ -126,9 +127,10 @@ public class Simulator implements EventScheduler {
 
 	private void insertEvent(Event e) {
 		// antimessage and normal message cancel each other out
-		if (evList.contains(e))
+		if (evList.contains(e)) {
 			evList.remove(e);
-
+			return;
+		}
 		int pos = 0;
 		while (pos < evList.size()) {
 			Event n = evList.get(pos);
@@ -155,8 +157,10 @@ public class Simulator implements EventScheduler {
 	}
 
 	private void rollbackEvent(Event event) {
-		System.out.println("Rolling back event " + event);
+		System.out.println(getIdOfProcessor() + ": Rolling back event " + event);
 		eventHandlers.get(event.getType()).rollback(event, this);
+		processedEvents.remove(event);
+		insertEvent(event);
 	}
 
 	/**
@@ -164,7 +168,7 @@ public class Simulator implements EventScheduler {
 	 * processes the event
 	 */
 	public void processNextEvent() {
-		final Event e;
+		Event e;
 		final Message message = communication.receive();
 		if (message != null) {
 			e = message.getEvent(world);
@@ -174,11 +178,10 @@ public class Simulator implements EventScheduler {
 				doRollback(e);
 			}
 			insertEvent(e);
-
-		} else {
-			e = evList.get(0);
 		}
-
+		e = getNextEvent();
+		if (e == null)	throw new RuntimeException("Event was null!");
+		if(clock.isInPast(e.getTimeStamp())) throw new RuntimeException("event is in past");
 		if (e.getTimeStamp() > clock.currentSimulationTime()) {
 			clock.sleepUntil(e.getTimeStamp());
 		}
@@ -186,8 +189,16 @@ public class Simulator implements EventScheduler {
 		processEvent(e);
 	}
 
+	private Event getNextEvent() {
+		for (Event event : evList) {
+			if (!event.isAntiMessage())
+				return event;
+		}
+		return null;
+	}
+
 	private void processEvent(final Event e) {
-		System.out.println("Processing event " + e);
+		System.out.println(getIdOfProcessor() + ": Processing event " + e);
 		logGui.println("Process next event:" + e);
 		eventHandlers.get(e.getType()).process(e, this);
 		moveToProcessedQueue(e);
@@ -230,7 +241,7 @@ public class Simulator implements EventScheduler {
 			// add the aircraft only to the wolrd where its base airport is.
 			if (ap.getAirportId() % getTotalProcessors() == getIdOfProcessor()) {
 				world.addAircraft(ac);
-				System.out.println("aircraft " + ac.getName() + " for processor " + getIdofProcessor() + " located at "
+				System.out.println("aircraft " + ac.getName() + " for processor " + getIdOfProcessor() + " located at "
 						+ ap.getName());
 			}
 		}
@@ -301,10 +312,6 @@ public class Simulator implements EventScheduler {
 
 	public SimWorld getSimWorld() {
 		return world;
-	}
-
-	public int getIdofProcessor() {
-		return idofProcessor;
 	}
 
 	public boolean isMaster() {

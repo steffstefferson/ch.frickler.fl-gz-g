@@ -53,7 +53,7 @@ public class Animation extends JFrame implements ActionListener {
 		this.clock = c;
 		this.aircraftList = new HashSet<Aircraft>();
 
-		this.setTitle("ProcessId: " + sim.getIdofProcessor() + " isMaster: " + sim.isMaster());
+		this.setTitle("ProcessId: " + sim.getIdOfProcessor() + " isMaster: " + sim.isMaster());
 
 		setBounds(0, 0, 1024, 768);
 		setLayout(null);
