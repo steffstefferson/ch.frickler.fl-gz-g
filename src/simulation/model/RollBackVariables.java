@@ -5,6 +5,7 @@ public class RollBackVariables<K> {
 	private K value = null;
 
 	public RollBackVariables(K value) {
+		this.value = value;
 	}
 
 	public K getValue() {
