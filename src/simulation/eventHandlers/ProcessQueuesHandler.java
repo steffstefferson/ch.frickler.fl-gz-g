@@ -40,7 +40,7 @@ public class ProcessQueuesHandler implements TransactionalEventHandler {
 				scheduler.scheduleEvent(eNew);
 				ap.setRunWayFree(false);
 				// store the state for a later rollback
-				RollBackVariables vars = new RollBackVariables(ProcessQueuesHandler.KEY_ROLLBACK_LANDING, true);
+				RollBackVariables vars = new RollBackVariables(ProcessQueuesHandler.KEY_ROLLBACK_LANDING, false);
 				vars.setValue(ProcessQueuesHandler.KEY_ROLLBACK_TIME, eNew.getTimeStamp());
 				e.setRollBackVariable(vars);
 				e.setAirCraft(ac);
@@ -61,6 +61,7 @@ public class ProcessQueuesHandler implements TransactionalEventHandler {
 		if (vars.getBooleanValue(ProcessQueuesHandler.KEY_ROLLBACK_LANDING)) { // rollback the landing
 			final Aircraft ac = e.getAirCraft();
 			Event eNew = new Event(Event.START_LANDING, vars.getLongValue(KEY_ROLLBACK_TIME), ap, ac);
+			eNew.setAntiMessage(true);
 			scheduler.scheduleEvent(eNew);
 			ap.setRunWayFree(true);
 			ap.addFirstToHoldingQueue(ac);
@@ -68,6 +69,7 @@ public class ProcessQueuesHandler implements TransactionalEventHandler {
 		} else { // rollback the takeoff
 			final Aircraft ac = e.getAirCraft();
 			Event eNew = new Event(Event.START_TAKE_OFF, vars.getLongValue(KEY_ROLLBACK_TIME), ap, ac);
+			eNew.setAntiMessage(true);
 			scheduler.scheduleEvent(eNew);
 			ap.setRunWayFree(true);
 			ap.addFirstToStartQueue(ac);
