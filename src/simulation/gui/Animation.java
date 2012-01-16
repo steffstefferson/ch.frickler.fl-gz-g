@@ -1,11 +1,14 @@
 package simulation.gui;
 
+import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Graphics;
+import java.awt.Graphics2D;
 import java.awt.HeadlessException;
 import java.awt.Image;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.geom.Line2D;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Set;
@@ -191,12 +194,16 @@ public class Animation extends JFrame implements ActionListener {
 				int flughafenY = getYonMap(a.getY1());
 				g.setColor(Color.BLUE);
 				// g.drawString(s, flughafenX + 10, flughafenY - 10);
+				int width = 4;
+				int[] x = new int[] { flughafenX, getXonMap(a.getX2()),getXonMap(a.getX2())+width,flughafenX+width };
+				int[] y = new int[] { flughafenY, getYonMap(a.getY2()),getYonMap(a.getY2())+width,flughafenY+width };
+				
+				Graphics2D	 g2d = (Graphics2D) g;
+			    g2d.setStroke(new BasicStroke(8.0f));
 
-				int[] x = new int[] { flughafenX, getXonMap(a.getX2()) };
-				int[] y = new int[] { flughafenY, getYonMap(a.getY2()) };
-				g.drawPolygon(x, y, x.length);
-
-				// g.setColor(a.getColor());
+			    Line2D l = new Line2D.Double(flughafenX,flughafenY, getXonMap(a.getX2()), getYonMap(a.getY2()));
+			    
+			    g2d.draw(l);
 
 			}
 
