@@ -28,6 +28,10 @@ public class Event {
 	private Aircraft airCraft;
 	private boolean isAntiMessage;
 
+	private RollBackVariables rollBackVariable;
+	
+	
+	
 	public Airport getAirPort() {
 		return airPort;
 	}
@@ -147,6 +151,14 @@ public class Event {
 		if (type != other.type)
 			return false;
 		return true;
+	}
+
+	public RollBackVariables getRollBackVariable() {
+		return rollBackVariable;
+	}
+
+	public void setRollBackVariable(RollBackVariables rollBackVariable) {
+		this.rollBackVariable = rollBackVariable;
 	}
 
 }
