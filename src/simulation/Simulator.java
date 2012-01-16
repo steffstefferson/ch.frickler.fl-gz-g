@@ -7,8 +7,6 @@ import java.util.Map;
 import java.util.Random;
 import java.util.Vector;
 
-import org.junit.Assert;
-
 import simulation.communication.Communication;
 import simulation.communication.Message;
 import simulation.definition.EventScheduler;
@@ -81,19 +79,6 @@ public class Simulator implements EventScheduler {
 
 	public int getIdOfProcessor() {
 		return idofProcessor;
-	}
-
-	/*
-	 * get the next lower bound of future sending event
-	 */
-
-	private long getLowerFutureTimeStampBoundary() {
-		for (Event ev : evList) {
-			if (ev.getType() == Event.ENTER_AIRSPACE) {
-				return ev.getTimeStamp();
-			}
-		}
-		return -1;
 	}
 
 	/*

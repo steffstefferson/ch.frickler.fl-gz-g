@@ -1,7 +1,6 @@
 package simulation.gui;
 
 import java.awt.Color;
-import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.HeadlessException;
 import java.awt.event.ActionEvent;
