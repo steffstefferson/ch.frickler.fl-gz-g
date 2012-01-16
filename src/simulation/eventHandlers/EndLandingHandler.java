@@ -6,6 +6,7 @@ import simulation.model.Aircraft;
 import simulation.model.Airport;
 import simulation.model.Event;
 import simulation.model.Flight;
+import simulation.model.RollBackVariables;
 
 public class EndLandingHandler implements TransactionalEventHandler {
 
@@ -16,6 +17,7 @@ public class EndLandingHandler implements TransactionalEventHandler {
 		ac.setState(Aircraft.ON_GROUND);
 		ac.setLastX(ap.getX1());
 		ac.setLastY(ap.getY1());
+		e.setRollBackVariable(new RollBackVariables<Long>(ac.getLastTime()));
 		ac.setLastTime(e.getTimeStamp());
 		ap.setRunWayFree(true);
 		// do we have another flight?
@@ -36,7 +38,7 @@ public class EndLandingHandler implements TransactionalEventHandler {
 		ac.setState(Aircraft.LANDING);
 		ac.setLastX(ap.getX2());
 		ac.setLastY(ap.getY2());
-		// TODO last time?
+		ac.setLastTime(e.getRollBackVariable().getLongValue());
 		ap.setRunWayFree(false);
 		Flight f = ac.getFlightPlan().getPreviousFlight();
 		if (!ac.getDestination().equals(ap) && f != null) {

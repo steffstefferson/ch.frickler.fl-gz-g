@@ -35,8 +35,17 @@ public class StartTakeOffHandler implements TransactionalEventHandler {
 
 	@Override
 	public void rollback(Event e, EventScheduler scheduler) {
-		// TODO Auto-generated method stub
-
+		Aircraft ac = e.getAirCraft();
+		Airport ap = e.getAirPort();
+		
+		//rollback airplane state
+		ac.setState(Event.READY_FOR_DEPARTURE);
+		ac.setLastTime(e.getRollBackVariable().getLongValue());
+		
+		//remove event from event List
+		Event endTakeOffEvent = new Event(Event.END_TAKE_OFF, e.getTimeStamp(), ap, ac);
+		endTakeOffEvent.setAntiMessage(true);
+		scheduler.scheduleEvent(endTakeOffEvent);
 	}
 
 }
