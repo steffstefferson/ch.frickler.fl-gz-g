@@ -3,6 +3,11 @@ package simulation;
 import simulation.communication.SimpleCommunication;
 import simulation.model.SimWorld;
 
+/**
+ * 
+ * Class with main-method to start the programm without the P2P-MPI
+ * 
+ */
 public class Program {
 
 	/**

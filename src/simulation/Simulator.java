@@ -50,7 +50,9 @@ public class Simulator implements EventScheduler {
 
 	public Simulator(SimWorld world) {
 		this.world = world;
+
 		eventQueueManager = new EventQueueManager();
+		// Each event has his own handler
 		eventHandlers.put(Event.READY_FOR_DEPARTURE, new ReadyForDepartureHandler());
 		eventHandlers.put(Event.START_TAKE_OFF, new StartTakeOffHandler());
 		eventHandlers.put(Event.END_TAKE_OFF, new EndTakeOffHandler());
@@ -66,6 +68,16 @@ public class Simulator implements EventScheduler {
 
 	}
 
+	/**
+	 * 
+	 * @param world
+	 * @param bMasterProcess
+	 *            Indicates if this LP
+	 * @param idofProcessor
+	 *            ID of this LP
+	 * @param totalProcessors
+	 *            Total amount of all LP
+	 */
 	public Simulator(SimWorld world, boolean bMasterProcess, int idofProcessor, int totalProcessors) {
 		this(world);
 		this.idofProcessor = idofProcessor;
@@ -73,14 +85,24 @@ public class Simulator implements EventScheduler {
 		this.totalProcessors = totalProcessors;
 	}
 
+	/**
+	 * 
+	 * @return Id of the LP
+	 */
 	public int getIdOfProcessor() {
 		return idofProcessor;
 	}
 
-	/*
-	 * New events which lay in the past cause a causality error
+	/**
+	 * Schedules the next event. If the event is of type ENTER_AIRSPACE-Event
+	 * then the event gets sent to the affected airport via MPI
 	 * 
+	 * @param e
+	 *            Next event to schedule
+	 * @throws
 	 * @see EventScheduler#scheduleEvent(Event)
+	 * 
+	 * 
 	 */
 	public void scheduleEvent(Event e) {
 

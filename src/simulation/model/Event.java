@@ -8,9 +8,7 @@ public class Event {
 	public static final int ARRIVAL = 3;
 	public static final int START_LANDING = 4;
 	public static final int END_LANDING = 5;
-	// never used
-	// public static final int ENTER_START_QUEUE = 6;
-	// public static final int ENTER_LANDING_QUEUE = 7;
+
 	public static final int PROCESS_QUEUES = 8;
 	public static final int ADD_TO_ANIMATION = 9;
 	public static final int REMOVE_FROM_ANIMATION = 10;

@@ -1,6 +1,5 @@
 package simulation.model;
 
-
 public class Aircraft {
 	// states
 	public static final int ON_GROUND = 0;
@@ -128,6 +127,11 @@ public class Aircraft {
 				+ MAX_ACCEL;
 	}
 
+	/**
+	 * Calculates the current position of the airplane according to the state.
+	 * 
+	 * @param currentSimulationTime
+	 */
 	public void calcPosition(long currentSimulationTime) {
 		if (getState() == ON_HOLDING_LOOP) {
 			calcHoldingPosition(currentSimulationTime);
@@ -137,6 +141,15 @@ public class Aircraft {
 
 	}
 
+	/**
+	 * If the airplane is in a holding loop, then the current position is
+	 * calculated
+	 * 
+	 * 
+	 * @param currentSimulationTime
+	 * @see <a href="https://staff.ti.bfh.ch/swp1/PC/AirTrafficBeilage.pdf">How
+	 *      To calculate position</a>
+	 */
 	private void calcHoldingPosition(long currentSimulationTime) {
 		double beginRunwayX = destination.getX1();
 		double beginRunwayY = destination.getY1();
@@ -169,6 +182,15 @@ public class Aircraft {
 
 	}
 
+	/**
+	 * If the airplane is not in a holding loop, the position is calculated
+	 * according to timestamp and the speed of the aircraft
+	 * 
+	 * 
+	 * @param currentSimulationTime
+	 * @see <a href="https://staff.ti.bfh.ch/swp1/PC/AirTrafficBeilage.pdf">How
+	 *      To calculate position</a>
+	 */
 	private void calcFlightPosition(long currentSimulationTime) {
 		double targetX = destination.getX1();
 		double targetY = destination.getY1();

@@ -23,6 +23,15 @@ import simulation.model.Aircraft;
 import simulation.model.Airport;
 import simulation.model.SimWorld;
 
+/**
+ * Class for providing a GUI to the simulation. The Background of the JFrame is
+ * a Map of Switzerland and all airports and airplanes are painted on this
+ * background. The simulation gets repainted when a RepaintEvent gets processed.
+ * The intervall is determined by global variable REPAINT_GAP.
+ * 
+ * This class is a singleton because there is only one GUI for each LP.
+ * 
+ */
 public class Animation extends JFrame implements ActionListener {
 
 	/**
@@ -41,17 +50,29 @@ public class Animation extends JFrame implements ActionListener {
 	private Simulator sim;
 	private Clock clock;
 	private static Animation animation;
-	private ImagePanel imagePanel;
-	private AirportPanel airportPanel;
+	private BackgroundPanel imagePanel;
+	private AircraftPanel airportPanel;
 
+	/**
+	 * Initiates the animation
+	 * 
+	 * @param sim
+	 *            Simulator
+	 * @param c
+	 *            Clock
+	 * @return instance of the animation gui
+	 */
 	public static Animation init(Simulator sim, Clock c) {
 		animation = new Animation(sim, c);
 		return animation;
 	}
 
+	/**
+	 * 
+	 * @return singleton of the animation gui
+	 */
 	public static Animation getInstance() {
 		return animation;
-
 	}
 
 	private Animation(Simulator sim, Clock c) throws HeadlessException {
@@ -66,8 +87,8 @@ public class Animation extends JFrame implements ActionListener {
 		setBounds(0, 0, 1024, 768);
 		setLayout(null);
 
-		airportPanel = new AirportPanel();
-		imagePanel = new ImagePanel("res/swiss.jpg");
+		airportPanel = new AircraftPanel();
+		imagePanel = new BackgroundPanel("res/swiss.jpg");
 		this.getContentPane().add(airportPanel);
 		this.getContentPane().add(imagePanel);
 
@@ -103,10 +124,22 @@ public class Animation extends JFrame implements ActionListener {
 		return ret < 0 ? 0 : ret;
 	}
 
+	/**
+	 * Adds an aircraft to the local aircraftList. Each aircraft in this list
+	 * gets painted on the map
+	 * 
+	 * @param aircraft
+	 *            Aircraft to paint on gui
+	 */
 	public void addToQuery(Aircraft aircraft) {
 		aircraftList.add(aircraft);
 	}
 
+	/**
+	 * 
+	 * @param aircraft
+	 *            Aircraft to remove
+	 */
 	public void removeFromQuery(Aircraft aircraft) {
 		aircraftList.remove(aircraft);
 	}
@@ -122,9 +155,15 @@ public class Animation extends JFrame implements ActionListener {
 		airportPanel.repaint();
 	}
 
-	private class AirportPanel extends JPanel {
+	/**
+	 * 
+	 * Panel which paints all aircrafts. This panel has the higest Z-Index and
+	 * gets repainted with each REPAINT_EVENT
+	 * 
+	 */
+	private class AircraftPanel extends JPanel {
 
-		public AirportPanel() {
+		public AircraftPanel() {
 			this.setSize(Animation.this.getSize());
 			setLayout(null);
 			setVisible(true);
@@ -133,9 +172,8 @@ public class Animation extends JFrame implements ActionListener {
 
 		public void paint(Graphics g) {
 			try {
-				super.paint(g); // this causes the flackering
+				super.paint(g);
 				printAircrafts(g);
-				// printAircrafts(g);
 			} catch (Exception ex) {
 				// catch the ConcurrentModificationException
 			}
@@ -158,11 +196,17 @@ public class Animation extends JFrame implements ActionListener {
 
 	}
 
-	private class ImagePanel extends JPanel {
+	/**
+	 * 
+	 * This panel paints the background and all airports on it. It only gets
+	 * repainted when the window gets resized
+	 * 
+	 */
+	private class BackgroundPanel extends JPanel {
 
 		private Image img;
 
-		public ImagePanel(String path) {
+		public BackgroundPanel(String path) {
 
 			java.net.URL url = Animation.class.getResource(path);
 			if (url == null) {
@@ -187,23 +231,20 @@ public class Animation extends JFrame implements ActionListener {
 		private void printAirports(Graphics g) {
 			SimWorld world = sim.getSimWorld();
 			HashMap<String, Airport> aps = world.getAirports();
+			// Paint each airport runway
 			for (String s : aps.keySet()) {
 				Airport a = aps.get(s);
 
 				int flughafenX = getXonMap(a.getX1());
 				int flughafenY = getYonMap(a.getY1());
 				g.setColor(Color.BLUE);
-				// g.drawString(s, flughafenX + 10, flughafenY - 10);
-				int width = 4;
-				int[] x = new int[] { flughafenX, getXonMap(a.getX2()),getXonMap(a.getX2())+width,flughafenX+width };
-				int[] y = new int[] { flughafenY, getYonMap(a.getY2()),getYonMap(a.getY2())+width,flughafenY+width };
-				
-				Graphics2D	 g2d = (Graphics2D) g;
-			    g2d.setStroke(new BasicStroke(8.0f));
 
-			    Line2D l = new Line2D.Double(flughafenX,flughafenY, getXonMap(a.getX2()), getYonMap(a.getY2()));
-			    
-			    g2d.draw(l);
+				Graphics2D g2d = (Graphics2D) g;
+				g2d.setStroke(new BasicStroke(8.0f));
+
+				Line2D l = new Line2D.Double(flughafenX, flughafenY, getXonMap(a.getX2()), getYonMap(a.getY2()));
+
+				g2d.draw(l);
 
 			}
 
