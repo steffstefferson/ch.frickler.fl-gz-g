@@ -2,6 +2,7 @@ package simulation;
 
 import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
@@ -76,5 +77,17 @@ public class EventQueueManager {
 
 	public int getNumberOfPendingEvents() {
 		return eventList.size();
+	}
+
+	public void cleanup(long gvt) {
+		int before = processedEvents.size();
+		for (Iterator<Event> iterator = processedEvents.iterator(); iterator.hasNext();) {
+			Event event = iterator.next();
+			if (event.getTimeStamp() < gvt)
+				iterator.remove();
+		}
+		System.out.println("Deleted " + (before - processedEvents.size())
+				+ " events from processed queue; new size is " + processedEvents.size());
+
 	}
 }

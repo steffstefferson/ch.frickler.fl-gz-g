@@ -111,7 +111,8 @@ public class Simulator implements EventScheduler {
 			communication.send(e, e.getAirCraft());
 		} else if (e.getType() == Event.START_GVT) {
 			communication.startGVT(e);
-			communication.broadcastGVT(getLocalMinimum());
+			long gvt = communication.broadcastGVT(getLocalMinimum());
+			eventQueueManager.cleanup(gvt);
 			eventQueueManager.insertEvent(new Event(Event.START_GVT,
 					clock.currentSimulationTime() + Clock.GVT_TIME_GAP, null, null));
 		} else {
@@ -175,7 +176,8 @@ public class Simulator implements EventScheduler {
 		if (message != null) {
 			e = message.getEvent(world);
 			if (e.getType() == Event.START_GVT) {
-				communication.calculateGVT(getLocalMinimum());
+				long gvt = communication.calculateGVT(getLocalMinimum());
+				eventQueueManager.cleanup(gvt);
 			} else {
 				if (clock.isInPast(e.getTimeStamp())) {
 					// we received a straggler message, roll back everything up
