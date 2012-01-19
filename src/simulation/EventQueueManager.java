@@ -13,6 +13,7 @@ public class EventQueueManager {
 	private List<Event> eventList; // time ordered list
 	private Set<Event> antiMessages;
 	private List<Event> processedEvents;
+	private long gvt;
 
 	public EventQueueManager() {
 		eventList = new ArrayList<Event>();
@@ -80,6 +81,7 @@ public class EventQueueManager {
 	}
 
 	public void cleanup(long gvt) {
+		this.gvt = gvt;
 		int before = processedEvents.size();
 		for (Iterator<Event> iterator = processedEvents.iterator(); iterator.hasNext();) {
 			Event event = iterator.next();
@@ -90,4 +92,9 @@ public class EventQueueManager {
 				+ " events from processed queue; new size is " + processedEvents.size());
 
 	}
+
+	public long getGVT() {
+		return gvt;
+	}
+
 }

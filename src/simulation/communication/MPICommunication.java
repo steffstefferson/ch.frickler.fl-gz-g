@@ -1,7 +1,5 @@
 package simulation.communication;
 
-import java.util.Arrays;
-
 import p2pmpi.mpi.MPI;
 import p2pmpi.mpi.Request;
 import simulation.model.Aircraft;
@@ -75,12 +73,24 @@ public class MPICommunication implements Communication {
 			MPI.COMM_WORLD.Recv(localMinima, i, 1, MPI.LONG, i, flagLocalMinimum);
 			System.out.println("Received local minimum " + localMinima[i] + " from " + i);
 		}
-		Arrays.sort(localMinima);
-		System.out.println("New global minimum is: " + localMinima[0]);
+		final long gvt = getGlobalMinimum(localMinima);
+		System.out.println("New global minimum is: " + gvt);
+		long[] gvtArray = new long[] { gvt };
 		for (int i = 1; i < numberOfProcessors; i++) {
 			System.out.println("sending new GVT to " + i);
-			MPI.COMM_WORLD.Send(localMinima, 0, 1, MPI.LONG, i, flagGVT);
+			MPI.COMM_WORLD.Send(gvtArray, 0, 1, MPI.LONG, i, flagGVT);
 		}
-		return localMinima[0];
+		return gvt;
+	}
+
+	private long getGlobalMinimum(long[] localMinima) {
+		long globalMinimum = Long.MAX_VALUE;
+		for (int i = 0; i < localMinima.length; i++) {
+			if (localMinima[i] > -1 && localMinima[i] < globalMinimum)
+				globalMinimum = localMinima[i];
+		}
+		if (globalMinimum == Long.MAX_VALUE)
+			return -1;
+		return globalMinimum;
 	}
 }

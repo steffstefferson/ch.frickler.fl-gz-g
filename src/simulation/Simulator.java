@@ -36,6 +36,7 @@ import simulation.model.SimWorld;
  */
 public class Simulator implements EventScheduler {
 
+	private static final int EMPTY_QUEUE = -1;
 	private Clock clock = new Clock();
 	private SimWorld world;
 	private LogGui logGui;
@@ -206,6 +207,8 @@ public class Simulator implements EventScheduler {
 	}
 
 	private long getLocalMinimum() {
+		if (eventQueueManager.getNumberOfPendingEvents() <= 1)
+			return EMPTY_QUEUE;
 		return clock.currentSimulationTime();
 	}
 
@@ -226,11 +229,12 @@ public class Simulator implements EventScheduler {
 	 */
 	public void runSimulation() {
 		int evCnt = 0;
-		while (eventQueueManager.getNextEvent() != null) {
+		while (eventQueueManager.getNextEvent() != null && eventQueueManager.getGVT() != EMPTY_QUEUE) {
 			processNextEvent();
 			evCnt++;
 		}
 		logGui.println("Processed " + evCnt + " events.");
+		System.out.println("[" + getIdOfProcessor() + "]: Processed " + evCnt + " events.");
 	}
 
 	public void initWorld() {
