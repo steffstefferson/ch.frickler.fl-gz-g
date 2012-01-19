@@ -5,7 +5,7 @@ import simulation.model.Event;
 /**
  * This interface provides a forward and a backward process handler. All Events
  * have to implement this interface to allow the time warp mechanism. The
- * rollback-method is used when a struggler message has arrived to rollback all
+ * rollback-method is used when a straggler message has arrived to rollback all
  * falsely processed events.
  * 
  * 
@@ -21,7 +21,7 @@ public interface TransactionalEventHandler {
 	public void process(Event e, EventScheduler scheduler);
 
 	/**
-	 * Rollbacks an event after a struggler message has arrived.
+	 * Rollbacks an event after a straggler message has arrived.
 	 * 
 	 * @param e
 	 *            Event to rollback
