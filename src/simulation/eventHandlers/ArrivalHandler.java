@@ -9,7 +9,6 @@ import simulation.model.RollBackVariables;
 
 public class ArrivalHandler implements TransactionalEventHandler {
 
-	private static final String KEY_TIMESTAMP = "TIMESTAMP";
 	private static final String KEY_LAST_TIME = "LAST_TIME";
 	
 	@Override
@@ -28,8 +27,7 @@ public class ArrivalHandler implements TransactionalEventHandler {
 		scheduler.scheduleEvent(eNew);
 		
 		// store the time for a possible rollback
-		RollBackVariables vars = new RollBackVariables(KEY_TIMESTAMP, eNew.getTimeStamp());
-		vars.setValue(KEY_LAST_TIME, lastTime);
+		RollBackVariables vars = new RollBackVariables(KEY_LAST_TIME, lastTime);
 		e.setRollBackVariable(vars);
 	}
 
@@ -42,7 +40,7 @@ public class ArrivalHandler implements TransactionalEventHandler {
 		ac.setCurrentAirPort(ac.getOrigin());
 		ac.setLastTime(e.getRollBackVariable().getLongValue(KEY_LAST_TIME));
 		ap.removeFromHoldingQueue(ac);
-		Event eNew = new Event(Event.PROCESS_QUEUES, e.getRollBackVariable().getLongValue(KEY_TIMESTAMP), ap, ac);
+		Event eNew = new Event(Event.PROCESS_QUEUES, e.getTimeStamp(), ap, ac);
 		eNew.setAntiMessage(true);
 		scheduler.scheduleEvent(eNew);
 	}
