@@ -122,9 +122,11 @@ public class Simulator implements EventScheduler {
 
 	}
 
+	/**
+	 * Creates the first REPAINT_EVENT to force the repaint of the animation gui
+	 */
 	private void startAnimation() {
-		Event eNew = new Event(Event.REPAINT_ANIMATION, clock.currentSimulationTime() + Clock.REPAINT_GAP,
-				null, null);
+		Event eNew = new Event(Event.REPAINT_ANIMATION, clock.currentSimulationTime() + Clock.REPAINT_GAP, null, null);
 		scheduleEvent(eNew);
 
 		logGui.println("Start paint animation" + eNew.toString());
@@ -145,6 +147,12 @@ public class Simulator implements EventScheduler {
 		}
 	}
 
+	/**
+	 * Rollback a single event
+	 * 
+	 * @param event
+	 *            Event to rollback
+	 */
 	private void rollbackEvent(Event event) {
 		System.out.println(getIdOfProcessor() + ": Rolling back event " + event);
 		eventHandlers.get(event.getType()).rollback(event, this);
@@ -157,6 +165,7 @@ public class Simulator implements EventScheduler {
 	 */
 	public void processNextEvent() {
 		Event e;
+		// Get message from MPI
 		final Message message = communication.receive();
 		if (message != null) {
 			e = message.getEvent(world);
@@ -168,9 +177,10 @@ public class Simulator implements EventScheduler {
 			eventQueueManager.insertEvent(e);
 		}
 		e = eventQueueManager.getNextEvent();
+		// causality error
 		if (clock.isInPast(e.getTimeStamp()))
 			throw new RuntimeException("event is in past");
-
+		// event is in the future. Sleep until this time
 		if (e.getTimeStamp() > clock.currentSimulationTime()) {
 			clock.sleepUntil(e.getTimeStamp());
 		}
@@ -178,6 +188,11 @@ public class Simulator implements EventScheduler {
 		processEvent(e);
 	}
 
+	/**
+	 * 
+	 * @param e
+	 * 
+	 */
 	private void processEvent(final Event e) {
 		System.out.println(getIdOfProcessor() + ": Processing event " + e);
 		logGui.println("Process next event:" + e);
@@ -221,10 +236,6 @@ public class Simulator implements EventScheduler {
 						+ ap.getName());
 			}
 		}
-		// create FlightPlans for all aircrafts
-		// for (int i = 0; i < world.getAircrafts().size(); i++) {
-		// Random Airport:
-		// Aircraft ac = world.getAircraft("X"+1000+i);
 
 		for (String key : world.getAircrafts().keySet()) {
 			Aircraft ac = world.getAircrafts().get(key);
@@ -244,8 +255,6 @@ public class Simulator implements EventScheduler {
 		}
 
 		// schedule initial events
-		// for (int i = 0; i < amountOfFlights; i++) {
-
 		// Start
 		for (String key : world.getAircrafts().keySet()) {
 			Aircraft ac = world.getAircrafts().get(key);
@@ -263,14 +272,12 @@ public class Simulator implements EventScheduler {
 
 	private void initAirports() {
 		// create airports
-
 		Airport ap = new Airport("ZURICH", 664000, 266000, 663000, 269000, 60000, 45000);
 		world.addAirport(ap);
 		ap = new Airport("GENF", 487000, 120000, 489000, 122000, 50000, 100000);
 		world.addAirport(ap);
 		ap = new Airport("BASEL", 592000, 287000, 593000, 288000, 40000, 45000);
 		world.addAirport(ap);
-
 		ap = new Airport("BERNE", 585000, 207000, 587000, 208000, 40000, 100000);
 		world.addAirport(ap);
 
