@@ -12,10 +12,10 @@ public class RepaintAnimationHandler implements TransactionalEventHandler {
 	public void process(Event e, EventScheduler scheduler) {
 		Animation.getInstance().repaintAircrafts();
 
-		if (scheduler.getNumberOfPendingEvents() > 1) {
+//		if (scheduler.getNumberOfPendingEvents() > 1) {
 			Event eNew = new Event(Event.REPAINT_ANIMATION, e.getTimeStamp() + Clock.REPAINT_GAP, null, null);
 			scheduler.scheduleEvent(eNew);
-		}
+//		}
 
 	}
 

@@ -59,7 +59,8 @@ public class EventQueueManager {
 	}
 
 	public void moveToProcessedQueue(final Event e) {
-		processedEvents.add(e);
+		if (e.getType() != Event.REPAINT_ANIMATION)
+			processedEvents.add(e);
 		eventList.remove(e);
 	}
 
