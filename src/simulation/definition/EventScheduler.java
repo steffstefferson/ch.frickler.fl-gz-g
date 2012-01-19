@@ -1,7 +1,5 @@
 package simulation.definition;
 
-import java.util.List;
-
 import simulation.model.Event;
 
 public interface EventScheduler {
@@ -9,6 +7,6 @@ public interface EventScheduler {
 
 	public void processNextEvent();
 
-	public List<Event> getEventList();
+	public int getNumberOfPendingEvents();
 	// public long getCurrentSimulationTime();
 }

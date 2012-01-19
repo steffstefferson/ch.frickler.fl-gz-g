@@ -1,13 +1,9 @@
 package simulation;
 
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
-import java.util.Vector;
-
-import p2pmpi.mpi.MPI;
 
 import simulation.communication.Communication;
 import simulation.communication.Message;
@@ -45,18 +41,16 @@ public class Simulator implements EventScheduler {
 	private LogGui logGui;
 	private int idofProcessor = 0;
 	private boolean isMaster = false;
-	private List<Event> evList; // time ordered list
 	private Animation animation;
 	private int totalProcessors = 1;
 	private String[] airportNames = { "ZURICH", "GENF", "BASEL", "BERNE" };
 	private Communication communication;
 	private Map<Integer, TransactionalEventHandler> eventHandlers = new HashMap<Integer, TransactionalEventHandler>();
-	private List<Event> processedEvents;
+	private EventQueueManager eventQueueManager;
 
 	public Simulator(SimWorld world) {
 		this.world = world;
-		evList = new ArrayList<Event>();
-		processedEvents = new Vector<Event>();
+		eventQueueManager = new EventQueueManager();
 		eventHandlers.put(Event.READY_FOR_DEPARTURE, new ReadyForDepartureHandler());
 		eventHandlers.put(Event.START_TAKE_OFF, new StartTakeOffHandler());
 		eventHandlers.put(Event.END_TAKE_OFF, new EndTakeOffHandler());
@@ -95,9 +89,10 @@ public class Simulator implements EventScheduler {
 			communication.send(e, e.getAirCraft());
 		} else {
 			// handle event locally
-			insertEvent(e);
-			if (evList.size() <= 1) {
-				Event eNew = new Event(Event.REPAINT_ANIMATION, clock.currentSimulationTime() + Clock.REPAINT_GAP, null, null);
+			eventQueueManager.insertEvent(e);
+			if (eventQueueManager.getNumberOfPendingEvents() <= 1) {
+				Event eNew = new Event(Event.REPAINT_ANIMATION, clock.currentSimulationTime() + Clock.REPAINT_GAP,
+						null, null);
 				scheduleEvent(eNew);
 
 				logGui.println("Start paint animation" + e.toString());
@@ -112,23 +107,6 @@ public class Simulator implements EventScheduler {
 
 	}
 
-	private void insertEvent(Event e) {
-		// antimessage and normal message cancel each other out
-		if (evList.contains(e)) {
-			evList.remove(e);
-			return;
-		}
-		int pos = 0;
-		while (pos < evList.size()) {
-			Event n = evList.get(pos);
-			if (n.getTimeStamp() > e.getTimeStamp())
-				break;
-			pos++;
-		}
-
-		evList.add(pos, e);
-	}
-
 	/**
 	 * rollback all processed events that are newer than the stragglerEvent
 	 * 
@@ -136,6 +114,7 @@ public class Simulator implements EventScheduler {
 	 */
 	private void doRollback(Event stragglerEvent) {
 		clock.rollbackTo(stragglerEvent.getTimeStamp());
+		final List<Event> processedEvents = eventQueueManager.getProcessedEvents();
 		for (int i = processedEvents.size() - 1; i >= 0; i--) {
 			Event event = processedEvents.get(i);
 			if (!clock.isInPast(event.getTimeStamp()))
@@ -146,8 +125,7 @@ public class Simulator implements EventScheduler {
 	private void rollbackEvent(Event event) {
 		System.out.println(getIdOfProcessor() + ": Rolling back event " + event);
 		eventHandlers.get(event.getType()).rollback(event, this);
-		processedEvents.remove(event);
-		insertEvent(event);
+		eventQueueManager.reInsertEvent(event);
 	}
 
 	/**
@@ -164,20 +142,11 @@ public class Simulator implements EventScheduler {
 				// its timestamp
 				doRollback(e);
 			}
-			insertEvent(e);
+			eventQueueManager.insertEvent(e);
 		}
-		e = getNextEvent();
-
-		if (e == null)	{
-			// for debugging purpose, show the anti messages in evList
-			System.out.println(getIdOfProcessor()+": event list size: " + evList.size());
-			System.out.println("events:");
-			for (Event ev : evList) {
-				System.out.println(ev);
-			}
-			throw new RuntimeException("Event was null!");
-		}
-		if(clock.isInPast(e.getTimeStamp())) throw new RuntimeException("event is in past");
+		e = eventQueueManager.getNextEvent();
+		if (clock.isInPast(e.getTimeStamp()))
+			throw new RuntimeException("event is in past");
 
 		if (e.getTimeStamp() > clock.currentSimulationTime()) {
 			clock.sleepUntil(e.getTimeStamp());
@@ -186,24 +155,11 @@ public class Simulator implements EventScheduler {
 		processEvent(e);
 	}
 
-	private Event getNextEvent() {
-		for (Event event : evList) {
-			if (!event.isAntiMessage())
-				return event;
-		}
-		return null;
-	}
-
 	private void processEvent(final Event e) {
 		System.out.println(getIdOfProcessor() + ": Processing event " + e);
 		logGui.println("Process next event:" + e);
 		eventHandlers.get(e.getType()).process(e, this);
-		moveToProcessedQueue(e);
-	}
-
-	private void moveToProcessedQueue(final Event e) {
-		processedEvents.add(e);
-		evList.remove(e);
+		eventQueueManager.moveToProcessedQueue(e);
 	}
 
 	/**
@@ -211,7 +167,7 @@ public class Simulator implements EventScheduler {
 	 */
 	public void runSimulation() {
 		int evCnt = 0;
-		while (evList.size() > 0) {
+		while (eventQueueManager.getNextEvent() != null) {
 			processNextEvent();
 			evCnt++;
 		}
@@ -233,7 +189,7 @@ public class Simulator implements EventScheduler {
 		for (int i = 0; i < amountOfFlights; i++) {
 			// Random Airport:
 			Airport ap = world.getAirport(airportNames[rand.nextInt(airportNames.length)]);
-			Aircraft ac = new Aircraft("X" + getIdOfProcessor() +"000" + i, ap);
+			Aircraft ac = new Aircraft("X" + getIdOfProcessor() + "000" + i, ap);
 
 			// add the aircraft only to the wolrd where its base airport is.
 			if (ap.getAirportId() % getTotalProcessors() == getIdOfProcessor()) {
@@ -321,8 +277,7 @@ public class Simulator implements EventScheduler {
 	}
 
 	@Override
-	public List<Event> getEventList() {
-		return evList;
+	public int getNumberOfPendingEvents() {
+		return eventQueueManager.getNumberOfPendingEvents();
 	}
-
 }
