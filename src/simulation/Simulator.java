@@ -109,6 +109,11 @@ public class Simulator implements EventScheduler {
 		if (e.getType() == Event.ENTER_AIRSPACE) {
 			// pass aircraft on to next airport
 			communication.send(e, e.getAirCraft());
+		} else if (e.getType() == Event.START_GVT) {
+			communication.startGVT(e);
+			communication.broadcastGVT(getLocalMinimum());
+			eventQueueManager.insertEvent(new Event(Event.START_GVT,
+					clock.currentSimulationTime() + Clock.GVT_TIME_GAP, null, null));
 		} else {
 			// handle event locally
 			eventQueueManager.insertEvent(e);
@@ -169,14 +174,24 @@ public class Simulator implements EventScheduler {
 		final Message message = communication.receive();
 		if (message != null) {
 			e = message.getEvent(world);
-			if (clock.isInPast(e.getTimeStamp())) {
-				// we received a straggler message, roll back everything up to
-				// its timestamp
-				doRollback(e);
+			if (e.getType() == Event.START_GVT) {
+				communication.calculateGVT(getLocalMinimum());
+			} else {
+				if (clock.isInPast(e.getTimeStamp())) {
+					// we received a straggler message, roll back everything up
+					// to
+					// its timestamp
+					doRollback(e);
+				}
+				eventQueueManager.insertEvent(e);
 			}
-			eventQueueManager.insertEvent(e);
 		}
 		e = eventQueueManager.getNextEvent();
+		if (e.getType() == Event.START_GVT) {
+			eventQueueManager.moveToProcessedQueue(e);
+			scheduleEvent(e);
+			return;
+		}
 		// causality error
 		if (clock.isInPast(e.getTimeStamp()))
 			throw new RuntimeException("event is in past");
@@ -186,6 +201,10 @@ public class Simulator implements EventScheduler {
 		}
 
 		processEvent(e);
+	}
+
+	private long getLocalMinimum() {
+		return clock.currentSimulationTime();
 	}
 
 	/**
@@ -268,6 +287,14 @@ public class Simulator implements EventScheduler {
 			}
 		}
 		startAnimation();
+		startGVT();
+	}
+
+	private void startGVT() {
+		if (isMaster()) {
+			scheduleEvent(new Event(Event.START_GVT, clock.currentSimulationTime() + Clock.GVT_TIME_GAP, null, null));
+		}
+
 	}
 
 	private void initAirports() {

@@ -20,5 +20,18 @@ public class SimpleCommunication implements Communication {
 		message = null;
 		return retMessage;
 	}
+	
+	@Override
+	public long calculateGVT(long localMinimum) {
+		return localMinimum;
+	}
 
+	@Override
+	public long broadcastGVT(long localMinimum) {
+		return localMinimum;
+	}
+
+	@Override
+	public void startGVT(Event event) {
+	}
 }

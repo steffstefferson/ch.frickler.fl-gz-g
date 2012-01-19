@@ -11,10 +11,15 @@ public class Clock {
 	 */
 	public static final long REPAINT_GAP = 50;
 
+	/** 
+	 * Gap between GVT synch events.
+	 */
+	public static final long GVT_TIME_GAP = 1000;
 	/**
 	 * 
 	 * @return The current simulation time
 	 */
+
 	public long currentSimulationTime() {
 		return currentSimulationTime;
 	}

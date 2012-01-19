@@ -59,8 +59,14 @@ public class EventQueueManager {
 	}
 
 	public void moveToProcessedQueue(final Event e) {
-		if (e.getType() != Event.REPAINT_ANIMATION)
+		switch (e.getType()) {
+		case Event.REPAINT_ANIMATION:
+		case Event.START_GVT:
+			break;
+		default:
 			processedEvents.add(e);
+			break;
+		}
 		eventList.remove(e);
 	}
 
