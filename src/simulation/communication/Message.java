@@ -16,9 +16,10 @@ public class Message implements Serializable {
 	/**
 	 * version id for Serialization; increment this when changing the class
 	 */
-	private static final long serialVersionUID = 2L;
+	private static final long serialVersionUID = 3L;
 
 	private int eventType;
+	private boolean antiMessage;
 	private long timeStamp;
 	private long takeOffTime;
 	private String aircraftName;
@@ -29,6 +30,7 @@ public class Message implements Serializable {
 
 	public Message(Event event, Aircraft aircraft) {
 		eventType = event.getType();
+		antiMessage = event.isAntiMessage();
 		timeStamp = event.getTimeStamp();
 		takeOffTime = aircraft.getLastTime();
 		aircraftName = aircraft.getName();
@@ -45,7 +47,9 @@ public class Message implements Serializable {
 
 	public Event getEvent(SimWorld world) {
 		Airport ap = world.getAirport(destination);
-		return new Event(eventType, timeStamp, ap, getAircraft(world));
+		final Event event = new Event(eventType, timeStamp, ap, getAircraft(world));
+		event.setAntiMessage(antiMessage);
+		return event;
 	}
 
 	private Aircraft getAircraft(SimWorld world) {
@@ -73,10 +77,12 @@ public class Message implements Serializable {
 
 	@Override
 	public String toString() {
-		return "Message [eventType=" + eventType + ", timeStamp=" + timeStamp + ", takeOffTime=" + takeOffTime
-				+ ", aircraftName=" + aircraftName + ", origin=" + origin + ", destination=" + destination
-				+ ", fpTimegaps=" + Arrays.toString(fpTimegaps) + ", fpDestinations=" + Arrays.toString(fpDestinations)
-				+ "]";
+		return "Message [eventType=" + eventType + ", antiMessage=" + antiMessage + ", timeStamp=" + timeStamp
+				+ ", takeOffTime=" + takeOffTime + ", aircraftName=" + aircraftName + ", origin=" + origin
+				+ ", destination=" + destination + ", fpTimegaps=" + Arrays.toString(fpTimegaps) + ", fpDestinations="
+				+ Arrays.toString(fpDestinations) + "]";
 	}
+
+	
 
 }
