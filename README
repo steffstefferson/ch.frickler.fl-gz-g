@@ -1,8 +1,8 @@
-Flügzüge
+"Flügzüge"
 
-To run the project with ANT, execute target "runMPI" (in Eclipse, right click build.xml -> Run as Ant Build
+To run the project with ANT, execute target "runMPI" (in Eclipse, right click build.xml -> Run as Ant Build)
 
-startup workaround
- - run ant file
- - then: "p2pmpirun -n 4 -l xferfiles simulation.MPIProgram"
+if you have trouble running it inside eclipse:
+ - open a console
+ - run: "ant createRunnables && p2pmpirun -n 4 -l xferfiles simulation.MPIProgram"
  

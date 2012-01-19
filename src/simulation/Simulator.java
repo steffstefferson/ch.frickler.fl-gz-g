@@ -112,13 +112,6 @@ public class Simulator implements EventScheduler {
 		} else {
 			// handle event locally
 			eventQueueManager.insertEvent(e);
-			if (eventQueueManager.getNumberOfPendingEvents() <= 1) {
-				Event eNew = new Event(Event.REPAINT_ANIMATION, clock.currentSimulationTime() + Clock.REPAINT_GAP,
-						null, null);
-				scheduleEvent(eNew);
-
-				logGui.println("Start paint animation" + e.toString());
-			}
 
 			if (clock.isInPast(e.getTimeStamp())) {
 				throw new RuntimeException("Causality error: " + e + "tim: " + e.getTimeStamp()
@@ -127,6 +120,14 @@ public class Simulator implements EventScheduler {
 
 		}
 
+	}
+
+	private void startAnimation() {
+		Event eNew = new Event(Event.REPAINT_ANIMATION, clock.currentSimulationTime() + Clock.REPAINT_GAP,
+				null, null);
+		scheduleEvent(eNew);
+
+		logGui.println("Start paint animation" + eNew.toString());
 	}
 
 	/**
@@ -257,6 +258,7 @@ public class Simulator implements EventScheduler {
 				scheduleEvent(e);
 			}
 		}
+		startAnimation();
 	}
 
 	private void initAirports() {

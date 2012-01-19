@@ -37,6 +37,7 @@ public class StartTakeOffHandler implements TransactionalEventHandler {
 		long eventTimeStamp = e.getTimeStamp() + takeOffDuration;
 		Event eNew = new Event(Event.END_TAKE_OFF, eventTimeStamp, ap, ac);
 		rv.setValue(StartTakeOffHandler.KEY_TIMESTAMP, eventTimeStamp);
+
 		scheduler.scheduleEvent(eNew);
 	}
 
