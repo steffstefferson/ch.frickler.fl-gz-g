@@ -10,7 +10,7 @@ import simulation.model.RollBackVariables;
 public class StartTakeOffHandler implements TransactionalEventHandler {
 
 	static private final String KEY_LAST_TIME = "LAST_TIME"; 
-	static private final String KEY_TIMESTAMP = "TIMESTAMP"; 
+	static private final String KEY_TAKEOFF_TIMESTAMP = "TIMESTAMP"; 
 	
 	@Override
 	public void process(Event e, EventScheduler scheduler) {
@@ -39,7 +39,7 @@ public class StartTakeOffHandler implements TransactionalEventHandler {
 		long eventTimeStamp = e.getTimeStamp()
 				+ takeOffDuration;
 		Event eNew = new Event(Event.END_TAKE_OFF, eventTimeStamp, ap, ac); 
-		rv.setValue(StartTakeOffHandler.KEY_TIMESTAMP, eventTimeStamp);
+		rv.setValue(StartTakeOffHandler.KEY_TAKEOFF_TIMESTAMP, eventTimeStamp);
 		scheduler.scheduleEvent(eNew);
 	}
 
@@ -55,7 +55,7 @@ public class StartTakeOffHandler implements TransactionalEventHandler {
 		//remove event from event List
 		Event endTakeOffEvent = new Event(
 				Event.END_TAKE_OFF,
-				e.getRollBackVariable().getLongValue(StartTakeOffHandler.KEY_TIMESTAMP),
+				e.getRollBackVariable().getLongValue(StartTakeOffHandler.KEY_TAKEOFF_TIMESTAMP),
 				ap,
 				ac
 		);
