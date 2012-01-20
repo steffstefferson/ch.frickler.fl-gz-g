@@ -5,10 +5,15 @@ import p2pmpi.mpi.Request;
 import simulation.model.Aircraft;
 import simulation.model.Event;
 
+/**
+ * This class is responsible for coordinating communication between different
+ * LPs across MPI.
+ */
 public class MPICommunication implements Communication {
 
 	Request request;
 	Message[] messages = new Message[1];
+	// Flags for MPI messages
 	private static final int flagEvent = 1;
 	private static final int flagLocalMinimum = 2;
 	private static final int flagGVT = 3;
@@ -16,11 +21,11 @@ public class MPICommunication implements Communication {
 	@Override
 	public void send(Event event, Aircraft aircraft) {
 		int id = MPI.COMM_WORLD.Rank();
-		Message[] m = new Message[] { new Message(event, aircraft) };
-		System.out.println("[" + id + "]: sending Message " + m[0]);
 		int n = MPI.COMM_WORLD.SizeTotal();
 		final int dest = aircraft.getDestination().getAirportId() % n;
-		System.out.println("n = " + n + ",dest = " + dest);
+		Message[] m = new Message[] { new Message(event, aircraft) };
+
+		System.out.println("[" + id + "]: sending Message " + m[0]);
 		MPI.COMM_WORLD.Send(m, 0, 1, MPI.OBJECT, dest, flagEvent);
 	}
 
@@ -83,6 +88,13 @@ public class MPICommunication implements Communication {
 		return gvt;
 	}
 
+	/**
+	 * calculate the global minimum from all local minima.
+	 * 
+	 * @param localMinima
+	 * @return the new global minimum, or -1 if all LPs have finished processing
+	 *         events
+	 */
 	private long getGlobalMinimum(long[] localMinima) {
 		long globalMinimum = Long.MAX_VALUE;
 		for (int i = 0; i < localMinima.length; i++) {

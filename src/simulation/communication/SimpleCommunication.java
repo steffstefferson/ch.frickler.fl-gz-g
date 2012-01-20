@@ -3,10 +3,14 @@ package simulation.communication;
 import simulation.model.Aircraft;
 import simulation.model.Event;
 
+/**
+ * Simple Communication implementation for single-process program.
+ * 
+ */
 public class SimpleCommunication implements Communication {
 
 	private Message message = null;
-	
+
 	@Override
 	public void send(Event event, Aircraft aircraft) {
 		if (message != null)
@@ -20,7 +24,7 @@ public class SimpleCommunication implements Communication {
 		message = null;
 		return retMessage;
 	}
-	
+
 	@Override
 	public long calculateGVT(long localMinimum) {
 		return localMinimum;
