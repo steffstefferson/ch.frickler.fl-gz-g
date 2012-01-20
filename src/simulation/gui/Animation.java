@@ -186,47 +186,90 @@ public class Animation extends JFrame implements ActionListener {
 			}
 		}
 
-		protected double calcAngle(Point p1, Point p2) {
-
-			double angle = Math.atan2(p2.y - p1.y, p2.x - p1.x) * 180.0 / Math.PI; // ;
-			return Math.round(angle / 10) * 10;
-		}
-
 		private void printAircrafts(Graphics g) {
 			for (Aircraft ac : aircraftList) {
 
-				Point origin = new Point(getXonMap(ac.getLastX()), getYonMap(ac.getLastY()));
 				ac.calcPosition(clock.currentSimulationTime());
 				Point currentPosition = new Point(getXonMap(ac.getLastX()), getYonMap(ac.getLastY()));
 
-				double angle = calcAngle(origin, currentPosition);
+				double destX = getXonMap(ac.getDestination().getX1());
+				double destY = getYonMap(ac.getDestination().getY1());
 
-				System.out.println("Angle" + angle + " from " + ac.getCurrentAirPort().getName() + " to "
-						+ ac.getDestination().getName());
+				// den richtungsvektor aus dem ziel und der aktuelle position
+				// berechnen
 
-				int offsetX1 = (int) (0 * Math.cos(angle) - 10 * Math.sin(angle));
-				int offsetY1 = (int) (0 * Math.sin(angle) + 10 * Math.cos(angle));
+				double vecX = 0;
+				double vecY = 0;
 
-				int offsetX2 = (int) (-5 * Math.cos(angle) + 40 * Math.sin(angle));
-				int offsetY2 = (int) (-5 * Math.sin(angle) - 40 * Math.cos(angle));
+				// calculate the vector pointing in the flight direction
+				if (ac.getState() == Aircraft.ON_HOLDING_LOOP) {
+					
+					Airport ap = ac.getDestination();
+					double vecToAirportX = getXonMap(ap.getX1()) - currentPosition.x;
+					double vecToAirportY = getYonMap(ap.getY1()) - currentPosition.y;
 
-				int offsetX3 = (int) (5 * Math.cos(angle) + 40 * Math.sin(angle));
-				int offsetY3 = (int) (5 * Math.sin(angle) - 40 * Math.cos(angle));
+					// the vector of the flight direction is orthogonal to the
+					// direction between the aircraft and the airport
+					vecX = -1 * vecToAirportY;
+					vecY = vecToAirportX;
 
-				Point p1 = new Point(currentPosition.x + offsetX1, currentPosition.y + offsetY1);
-				Point p2 = new Point(currentPosition.x + offsetX2, currentPosition.y + offsetY2);
-				Point p3 = new Point(currentPosition.x + offsetX3, currentPosition.y + offsetY3);
+				} else {
+					vecX = currentPosition.x - destX;
+					vecY = currentPosition.y - destY;
+				}
 
-				int[] xs = { p1.x, p2.x, p3.x };
-				int[] ys = { p1.y, p2.y, p3.y };
+				// calculate the triangle representing our aircraft
+				Point[] triangle = getTriangleByVector(currentPosition, vecX, vecY);
 
-				// Polygon triangle = new Polygon();
+				int[] xs = { triangle[0].x, triangle[1].x, triangle[2].x };
+				int[] ys = { triangle[0].y, triangle[1].y, triangle[2].y };
+
+				// // Polygon triangle = new Polygon();
 				g.setColor(Color.RED);
 				g.fillPolygon(xs, ys, 3);
 
 			}
 
 		}
+
+		/**
+		 * calculates the points for drawing an aircraft. the aircraft is
+		 * calculated by the vector of its flight direction
+		 * 
+		 * @param currentPosition
+		 *            the current position on the map
+		 * @param vecX
+		 *            the X component of the flight direction vector
+		 * @param vecY
+		 *            the Y component of the flight direction vector
+		 * @return an array of points to draw the aircraft (fillPolygon)
+		 */
+		private Point[] getTriangleByVector(Point currentPosition, double vecX, double vecY) {
+			Point[] triangle = new Point[3];
+			// normalize the vector
+			double betrag = Math.sqrt(vecX * vecX + vecY * vecY);
+			double normVecX = vecX / betrag;
+			double normVecY = vecY / betrag;
+
+			// the nose of the aircraft is displayed 15px ahead
+			vecX = normVecX * 12;
+			vecY = normVecY * 12;
+
+			// calculate the nose
+			triangle[0] = new Point((int) (currentPosition.x - vecX), (int) (currentPosition.y - vecY));
+
+			// we use 5 px for the wings
+			vecX = normVecX * 5;
+			vecY = normVecY * 5;
+
+			// calculate the wings using a +90 and -90 degree rotation of the
+			// vector
+			triangle[1] = new Point((int) (currentPosition.x + vecY), (int) (currentPosition.y - vecX));
+			triangle[2] = new Point((int) (currentPosition.x - vecY), (int) (currentPosition.y + vecX));
+
+			return triangle;
+		}
+
 	}
 
 	/**
