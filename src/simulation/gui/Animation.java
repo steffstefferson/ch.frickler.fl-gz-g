@@ -6,6 +6,8 @@ import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.HeadlessException;
 import java.awt.Image;
+import java.awt.Point;
+import java.awt.Polygon;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.geom.Line2D;
@@ -163,6 +165,11 @@ public class Animation extends JFrame implements ActionListener {
 	 */
 	private class AircraftPanel extends JPanel {
 
+		/**
+		 * 
+		 */
+		private static final long serialVersionUID = -6487012083573542984L;
+
 		public AircraftPanel() {
 			this.setSize(Animation.this.getSize());
 			setLayout(null);
@@ -179,21 +186,47 @@ public class Animation extends JFrame implements ActionListener {
 			}
 		}
 
+		protected double calcAngle(Point p1, Point p2) {
+
+			double angle = Math.atan2(p2.y - p1.y, p2.x - p1.x) * 180.0 / Math.PI; // ;
+			return Math.round(angle / 10) * 10;
+		}
+
 		private void printAircrafts(Graphics g) {
 			for (Aircraft ac : aircraftList) {
 
+				Point origin = new Point(getXonMap(ac.getLastX()), getYonMap(ac.getLastY()));
 				ac.calcPosition(clock.currentSimulationTime());
+				Point currentPosition = new Point(getXonMap(ac.getLastX()), getYonMap(ac.getLastY()));
 
-				int x = getXonMap(ac.getLastX());
-				int y = getYonMap(ac.getLastY());
+				double angle = calcAngle(origin, currentPosition);
 
+				System.out.println("Angle" + angle + " from " + ac.getCurrentAirPort().getName() + " to "
+						+ ac.getDestination().getName());
+
+				int offsetX1 = (int) (0 * Math.cos(angle) - 10 * Math.sin(angle));
+				int offsetY1 = (int) (0 * Math.sin(angle) + 10 * Math.cos(angle));
+
+				int offsetX2 = (int) (-5 * Math.cos(angle) + 40 * Math.sin(angle));
+				int offsetY2 = (int) (-5 * Math.sin(angle) - 40 * Math.cos(angle));
+
+				int offsetX3 = (int) (5 * Math.cos(angle) + 40 * Math.sin(angle));
+				int offsetY3 = (int) (5 * Math.sin(angle) - 40 * Math.cos(angle));
+
+				Point p1 = new Point(currentPosition.x + offsetX1, currentPosition.y + offsetY1);
+				Point p2 = new Point(currentPosition.x + offsetX2, currentPosition.y + offsetY2);
+				Point p3 = new Point(currentPosition.x + offsetX3, currentPosition.y + offsetY3);
+
+				int[] xs = { p1.x, p2.x, p3.x };
+				int[] ys = { p1.y, p2.y, p3.y };
+
+				// Polygon triangle = new Polygon();
 				g.setColor(Color.RED);
-				g.fillOval(x, y, 5, 5);
+				g.fillPolygon(xs, ys, 3);
 
 			}
 
 		}
-
 	}
 
 	/**
@@ -204,6 +237,10 @@ public class Animation extends JFrame implements ActionListener {
 	 */
 	private class BackgroundPanel extends JPanel {
 
+		/**
+		 * 
+		 */
+		private static final long serialVersionUID = 4122626147951344358L;
 		private Image img;
 
 		public BackgroundPanel(String path) {

@@ -222,6 +222,8 @@ public class Simulator implements EventScheduler {
 		Random rand = new Random(1234);
 
 		initAirports();
+		
+		amountOfFlights = 1;
 
 		// create 100 aircrafts and choose an arbitrary airport
 		for (int i = 0; i < amountOfFlights; i++) {

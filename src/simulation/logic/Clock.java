@@ -9,7 +9,7 @@ public class Clock {
 	/**
 	 * Gap between to repaints event.
 	 */
-	public static final long REPAINT_GAP = 50;
+	public static final long REPAINT_GAP = 50;// 50;
 
 	/**
 	 * 
