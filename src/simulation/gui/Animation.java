@@ -189,13 +189,11 @@ public class Animation extends JFrame implements ActionListener {
 				double destX = getXonMap(ac.getDestination().getX1());
 				double destY = getYonMap(ac.getDestination().getY1());
 
-				// den richtungsvektor aus dem ziel und der aktuelle position
-				// berechnen
-
+				// the vector for the flight direction
 				double vecX = 0;
 				double vecY = 0;
 
-				// calculate the vector pointing in the flight direction
+				// calculate vector pointing in the flight direction
 				if (ac.getState() == Aircraft.ON_HOLDING_LOOP) {
 					
 					Airport ap = ac.getDestination();
