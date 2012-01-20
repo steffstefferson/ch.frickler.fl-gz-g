@@ -2,6 +2,7 @@ package simulation;
 
 import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
@@ -12,6 +13,7 @@ public class EventQueueManager {
 	private List<Event> eventList; // time ordered list
 	private Set<Event> antiMessages;
 	private List<Event> processedEvents;
+	private long gvt;
 
 	public EventQueueManager() {
 		eventList = new ArrayList<Event>();
@@ -59,8 +61,14 @@ public class EventQueueManager {
 	}
 
 	public void moveToProcessedQueue(final Event e) {
-		if (e.getType() != Event.REPAINT_ANIMATION)
+		switch (e.getType()) {
+		case Event.REPAINT_ANIMATION:
+		case Event.START_GVT:
+			break;
+		default:
 			processedEvents.add(e);
+			break;
+		}
 		eventList.remove(e);
 	}
 
@@ -71,4 +79,22 @@ public class EventQueueManager {
 	public int getNumberOfPendingEvents() {
 		return eventList.size();
 	}
+
+	public void cleanup(long gvt) {
+		this.gvt = gvt;
+		int before = processedEvents.size();
+		for (Iterator<Event> iterator = processedEvents.iterator(); iterator.hasNext();) {
+			Event event = iterator.next();
+			if (event.getTimeStamp() < gvt)
+				iterator.remove();
+		}
+		System.out.println("Deleted " + (before - processedEvents.size())
+				+ " events from processed queue; new size is " + processedEvents.size());
+
+	}
+
+	public long getGVT() {
+		return gvt;
+	}
+
 }

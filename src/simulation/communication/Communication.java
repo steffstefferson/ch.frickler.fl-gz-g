@@ -22,4 +22,7 @@ public interface Communication {
 	 * @return a received message or null if none was available
 	 */
 	Message receive();
+	long calculateGVT(long localMinimum);
+	void startGVT(Event event);
+	long broadcastGVT(long localMinimum);
 }

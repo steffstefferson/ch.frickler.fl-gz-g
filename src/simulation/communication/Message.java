@@ -32,6 +32,8 @@ public class Message implements Serializable {
 		eventType = event.getType();
 		antiMessage = event.isAntiMessage();
 		timeStamp = event.getTimeStamp();
+		if (eventType == Event.START_GVT)
+			return;
 		takeOffTime = aircraft.getLastTime();
 		aircraftName = aircraft.getName();
 		origin = aircraft.getOrigin().getName();
@@ -47,7 +49,8 @@ public class Message implements Serializable {
 
 	public Event getEvent(SimWorld world) {
 		Airport ap = world.getAirport(destination);
-		final Event event = new Event(eventType, timeStamp, ap, getAircraft(world));
+		final Aircraft aircraft = eventType == Event.START_GVT ? null : getAircraft(world);
+		final Event event = new Event(eventType, timeStamp, ap, aircraft);
 		event.setAntiMessage(antiMessage);
 		return event;
 	}
