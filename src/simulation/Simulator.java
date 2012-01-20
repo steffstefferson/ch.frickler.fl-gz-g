@@ -36,6 +36,9 @@ import simulation.model.SimWorld;
  */
 public class Simulator implements EventScheduler {
 
+	/**
+	 * Special GVT value indicating that event processing is finished.
+	 */
 	private static final int EMPTY_QUEUE = -1;
 	private Clock clock = new Clock();
 	private SimWorld world;
