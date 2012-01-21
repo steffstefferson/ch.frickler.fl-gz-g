@@ -28,4 +28,11 @@
 			<arg value="simulation/MPIProgram" />
 		</exec>
 	</target>
+	<target name="runSingle">
+		<java classname="simulation.Program" fork="true">
+			<classpath>
+				<pathelement path="${basedir}/bin" />
+			</classpath>
+		</java>
+	</target>
 </project>

@@ -31,15 +31,15 @@ import simulation.model.Flight;
 import simulation.model.SimWorld;
 
 /**
- * @author ps Manages simulation clock, a event queue and world consisting of
- *         aircrafts and airports
+ * Manages simulation clock, a event queue and world consisting of aircrafts and
+ * airports
  */
 public class Simulator implements EventScheduler {
 
 	/**
 	 * Special GVT value indicating that event processing is finished.
 	 */
-	private static final int EMPTY_QUEUE = -1;
+	public static final int EMPTY_QUEUE = -1;
 	private Clock clock = new Clock();
 	private SimWorld world;
 	private LogGui logGui;
@@ -56,7 +56,7 @@ public class Simulator implements EventScheduler {
 		this.world = world;
 
 		eventQueueManager = new EventQueueManager();
-		// Each event has his own handler
+		// Each event has its own handler
 		eventHandlers.put(Event.READY_FOR_DEPARTURE, new ReadyForDepartureHandler());
 		eventHandlers.put(Event.START_TAKE_OFF, new StartTakeOffHandler());
 		eventHandlers.put(Event.END_TAKE_OFF, new EndTakeOffHandler());
@@ -114,6 +114,7 @@ public class Simulator implements EventScheduler {
 			// pass aircraft on to next airport
 			communication.send(e, e.getAirCraft());
 		} else if (e.getType() == Event.START_GVT) {
+			// master process only: calculate & broadcast GVT
 			communication.startGVT(e);
 			long gvt = communication.broadcastGVT(getLocalMinimum());
 			eventQueueManager.cleanup(gvt);
@@ -133,7 +134,7 @@ public class Simulator implements EventScheduler {
 	}
 
 	/**
-	 * Creates the first REPAINT_EVENT to force the repaint of the animation gui
+	 * Creates the first REPAINT_EVENT to force the repaint of the animation GUI
 	 */
 	private void startAnimation() {
 		Event eNew = new Event(Event.REPAINT_ANIMATION, clock.currentSimulationTime() + Clock.REPAINT_GAP, null, null);
@@ -143,7 +144,7 @@ public class Simulator implements EventScheduler {
 	}
 
 	/**
-	 * rollback all processed events that are newer than the stragglerEvent
+	 * Roll back all processed events that are newer than the stragglerEvent
 	 * 
 	 * @param stragglerEvent
 	 */
@@ -158,13 +159,13 @@ public class Simulator implements EventScheduler {
 	}
 
 	/**
-	 * Rollback a single event
+	 * Roll back a single event
 	 * 
 	 * @param event
-	 *            Event to rollback
+	 *            Event to roll back
 	 */
 	private void rollbackEvent(Event event) {
-		System.out.println(getIdOfProcessor() + ": Rolling back event " + event);
+		System.out.println("[" + getIdOfProcessor() + "]: Rolling back event " + event);
 		eventHandlers.get(event.getType()).rollback(event, this);
 		eventQueueManager.reInsertEvent(event);
 	}
@@ -174,54 +175,68 @@ public class Simulator implements EventScheduler {
 	 * processes the event
 	 */
 	public void processNextEvent() {
-		Event e;
-		// Get message from MPI
-		final Message message = communication.receive();
-		if (message != null) {
-			e = message.getEvent(world);
-			if (e.getType() == Event.START_GVT) {
-				long gvt = communication.calculateGVT(getLocalMinimum());
-				eventQueueManager.cleanup(gvt);
-			} else {
-				if (clock.isInPast(e.getTimeStamp())) {
-					// we received a straggler message, roll back everything up
-					// to
-					// its timestamp
-					doRollback(e);
-				}
-				eventQueueManager.insertEvent(e);
-			}
-		}
-		e = eventQueueManager.getNextEvent();
+		final Event e = eventQueueManager.getNextEvent();
+		// master process only: GVT broadcast is handled explicitly
 		if (e.getType() == Event.START_GVT) {
 			eventQueueManager.moveToProcessedQueue(e);
 			scheduleEvent(e);
 			return;
 		}
-		// causality error
+		// local causality constraint violation, should never happen
 		if (clock.isInPast(e.getTimeStamp()))
 			throw new RuntimeException("event is in past");
 		// event is in the future. Sleep until this time
 		if (e.getTimeStamp() > clock.currentSimulationTime()) {
 			clock.sleepUntil(e.getTimeStamp());
 		}
-
 		processEvent(e);
 	}
 
-	private long getLocalMinimum() {
-		if (eventQueueManager.getNumberOfPendingEvents() <= 1)
-			return EMPTY_QUEUE;
-		return clock.currentSimulationTime();
+	/**
+	 * Try to receive a message via MPI. If a message is received, insert it
+	 * into the event queue.
+	 */
+	private void receiveMessage() {
+		final Message message = communication.receive();
+		if (message == null)
+			return; // nothing received
+		final Event e = message.getEvent(world);
+		if (e.getType() == Event.START_GVT) {
+			long gvt = communication.calculateGVT(getLocalMinimum());
+			eventQueueManager.cleanup(gvt);
+		} else {
+			if (clock.isInPast(e.getTimeStamp())) {
+				System.out.println("[" + getIdOfProcessor() + "]: Received straggler message, starting rollback: " + e);
+				doRollback(e);
+			}
+			eventQueueManager.insertEvent(e);
+		}
 	}
 
 	/**
+	 * Calculate the minimal local timestamp.
+	 * 
+	 * @return the lowest timestamp of the queued events, or -1 if no more
+	 *         events are in the queue
+	 */
+	private long getLocalMinimum() {
+		// there will always be a repaint event in the queue, so we check for
+		// <=1
+		if (eventQueueManager.getNumberOfPendingEvents() <= 1)
+			return EMPTY_QUEUE;
+		return eventQueueManager.getNextEvent().getTimeStamp();
+	}
+
+	/**
+	 * Process a single event by calling the appropriate EventHandler, then
+	 * moving the event to the processed queue.
 	 * 
 	 * @param e
+	 *            the event to be processed
 	 * 
 	 */
 	private void processEvent(final Event e) {
-		System.out.println(getIdOfProcessor() + ": Processing event " + e);
+		System.out.println("[" + getIdOfProcessor() + "]: Processing event " + e);
 		logGui.println("Process next event:" + e);
 		eventHandlers.get(e.getType()).process(e, this);
 		eventQueueManager.moveToProcessedQueue(e);
@@ -233,15 +248,12 @@ public class Simulator implements EventScheduler {
 	public void runSimulation() {
 		int evCnt = 0;
 		while (eventQueueManager.getNextEvent() != null && eventQueueManager.getGVT() != EMPTY_QUEUE) {
+			receiveMessage();
 			processNextEvent();
 			evCnt++;
 		}
 		logGui.println("Processed " + evCnt + " events.");
 		System.out.println("[" + getIdOfProcessor() + "]: Processed " + evCnt + " events.");
-	}
-
-	public void initWorld() {
-		initWorld(100);
 	}
 
 	public void initWorld(int amountOfFlights) {
@@ -300,7 +312,7 @@ public class Simulator implements EventScheduler {
 	}
 
 	private void startGVT() {
-		if (isMaster()) {
+		if (isMaster() || getTotalProcessors() == 1) {
 			scheduleEvent(new Event(Event.START_GVT, clock.currentSimulationTime() + Clock.GVT_TIME_GAP, null, null));
 		}
 

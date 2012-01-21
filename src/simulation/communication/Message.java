@@ -11,6 +11,11 @@ import simulation.model.Flight;
 import simulation.model.FlightPlan;
 import simulation.model.SimWorld;
 
+/**
+ * Message class for MPI. This only contains simple fields (primitives and
+ * Strings) to allow for efficient serialization over the network.
+ * 
+ */
 public class Message implements Serializable {
 
 	/**
@@ -85,7 +90,5 @@ public class Message implements Serializable {
 				+ ", destination=" + destination + ", fpTimegaps=" + Arrays.toString(fpTimegaps) + ", fpDestinations="
 				+ Arrays.toString(fpDestinations) + "]";
 	}
-
-	
 
 }

@@ -1,6 +1,6 @@
 "Flügzüge"
 
-To run the project with ANT, execute target "runMPI" (in Eclipse, right click build.xml -> Run as Ant Build)
+To run the project with ANT, execute target "runMPI" (in Eclipse, right click build.xml -> Run as Ant Build... -> Select target "runMPI")
 
 if you have trouble running it inside eclipse:
  - open a console

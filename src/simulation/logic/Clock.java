@@ -1,20 +1,28 @@
 package simulation.logic;
 
+/**
+ * This class is responsible for managing the simulation time.
+ */
 public class Clock {
 
 	private long currentSimulationTime = 0;
 
-	private static final int SCALE_FACTOR = 300;
+	/**
+	 * Scale factor for the simulation time; larger values mean the simulation
+	 * runs faster.
+	 */
+	private static final int SCALE_FACTOR = 500;
 
 	/**
 	 * Gap between to repaints event.
 	 */
-	public static final long REPAINT_GAP = 50;
+	public static final long REPAINT_GAP = 30;
 
-	/** 
+	/**
 	 * Gap between GVT synch events.
 	 */
 	public static final long GVT_TIME_GAP = 1000;
+
 	/**
 	 * 
 	 * @return The current simulation time

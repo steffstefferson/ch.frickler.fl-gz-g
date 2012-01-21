@@ -17,8 +17,9 @@ public class Program {
 		Simulator sim = new Simulator(SimWorld.getInstance());
 		sim.setCommunication(new SimpleCommunication());
 		sim.initGui();
-		sim.initWorld(1000);
+		sim.initWorld(100);
 		sim.runSimulation();
+		System.exit(0);
 	}
 
 }

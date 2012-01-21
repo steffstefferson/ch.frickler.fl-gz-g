@@ -163,6 +163,7 @@ public class Animation extends JFrame implements ActionListener {
 	 * 
 	 */
 	private class AircraftPanel extends JPanel {
+		private static final long serialVersionUID = 1L;
 
 		public AircraftPanel() {
 			this.setSize(Animation.this.getSize());
@@ -195,7 +196,7 @@ public class Animation extends JFrame implements ActionListener {
 
 				// calculate vector pointing in the flight direction
 				if (ac.getState() == Aircraft.ON_HOLDING_LOOP) {
-					
+
 					Airport ap = ac.getDestination();
 					double vecToAirportX = getXonMap(ap.getX1()) - currentPosition.x;
 					double vecToAirportY = getYonMap(ap.getY1()) - currentPosition.y;
@@ -271,6 +272,7 @@ public class Animation extends JFrame implements ActionListener {
 	 */
 	private class BackgroundPanel extends JPanel {
 
+		private static final long serialVersionUID = 1L;
 		private Image img;
 
 		public BackgroundPanel(String path) {
